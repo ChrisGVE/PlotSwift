@@ -5,6 +5,7 @@
 [![SPM Compatible](https://img.shields.io/badge/SPM-Compatible-brightgreen.svg?style=flat&logo=swift&logoColor=white)](https://swift.org/package-manager/)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=flat)](https://opensource.org/licenses/MIT)
 [![GitHub Release](https://img.shields.io/github/v/release/ChrisGVE/PlotSwift?style=flat&logo=github)](https://github.com/ChrisGVE/PlotSwift/releases)
+[![CI](https://github.com/ChrisGVE/PlotSwift/actions/workflows/ci.yml/badge.svg)](https://github.com/ChrisGVE/PlotSwift/actions/workflows/ci.yml)
 [![Documentation](https://img.shields.io/badge/Documentation-DocC-blue.svg?style=flat&logo=readthedocs&logoColor=white)](https://github.com/ChrisGVE/PlotSwift)
 
 A Swift vector graphics drawing library providing the foundation for data visualization. PlotSwift uses a retained-mode command-based architecture for scale-free rendering, with export to PNG, PDF, and SVG formats.

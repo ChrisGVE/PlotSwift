@@ -1,0 +1,112 @@
+client:
+  name: basic
+  file-system: device-agnostic
+tools: {}
+targets:
+  "PackageStructure": ["<PackageStructure>"]
+  "PlotSwift-x86_64-apple-macosx15.0-debug.module": ["<PlotSwift-x86_64-apple-macosx15.0-debug.module>"]
+  "PlotSwiftPackageTests-x86_64-apple-macosx15.0-debug.module": ["<PlotSwiftPackageTests-x86_64-apple-macosx15.0-debug.module>"]
+  "PlotSwiftPackageTests-x86_64-apple-macosx15.0-debug.test": ["<PlotSwiftPackageTests-x86_64-apple-macosx15.0-debug.test>"]
+  "PlotSwiftTests-x86_64-apple-macosx15.0-debug.module": ["<PlotSwiftTests-x86_64-apple-macosx15.0-debug.module>"]
+  "main": ["<PlotSwift-x86_64-apple-macosx15.0-debug.module>"]
+  "test": ["<PlotSwift-x86_64-apple-macosx15.0-debug.module>","<PlotSwiftPackageTests-x86_64-apple-macosx15.0-debug.test>","<PlotSwiftTests-x86_64-apple-macosx15.0-debug.module>"]
+default: "main"
+nodes:
+  "/Users/chris/dev/projects/libraries/PlotSwift/Sources/PlotSwift/":
+    is-directory-structure: true
+    content-exclusion-patterns: [".git",".build"]
+  "/Users/chris/dev/projects/libraries/PlotSwift/Tests/PlotSwiftTests/":
+    is-directory-structure: true
+    content-exclusion-patterns: [".git",".build"]
+commands:
+  "/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/PlotSwift.build/sources":
+    tool: write-auxiliary-file
+    inputs: ["<sources-file-list>","/Users/chris/dev/projects/libraries/PlotSwift/Sources/PlotSwift/PlotTypes.swift"]
+    outputs: ["/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/PlotSwift.build/sources"]
+    description: "Write auxiliary file /Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/PlotSwift.build/sources"
+
+  "/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/PlotSwiftPackageTests.build/sources":
+    tool: write-auxiliary-file
+    inputs: ["<sources-file-list>","/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/PlotSwiftPackageTests.derived/runner.swift"]
+    outputs: ["/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/PlotSwiftPackageTests.build/sources"]
+    description: "Write auxiliary file /Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/PlotSwiftPackageTests.build/sources"
+
+  "/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/PlotSwiftPackageTests.derived/runner.swift":
+    tool: test-entry-point-tool
+    inputs: []
+    outputs: ["/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/PlotSwiftPackageTests.derived/runner.swift"]
+
+  "/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/PlotSwiftPackageTests.product/Objects.LinkFileList":
+    tool: write-auxiliary-file
+    inputs: ["<link-file-list>","/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/PlotSwift.build/PlotTypes.swift.o","/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/PlotSwiftPackageTests.build/runner.swift.o","/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/PlotSwiftTests.build/PlotTypesTests.swift.o"]
+    outputs: ["/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/PlotSwiftPackageTests.product/Objects.LinkFileList"]
+    description: "Write auxiliary file /Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/PlotSwiftPackageTests.product/Objects.LinkFileList"
+
+  "/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/PlotSwiftTests.build/sources":
+    tool: write-auxiliary-file
+    inputs: ["<sources-file-list>","/Users/chris/dev/projects/libraries/PlotSwift/Tests/PlotSwiftTests/PlotTypesTests.swift"]
+    outputs: ["/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/PlotSwiftTests.build/sources"]
+    description: "Write auxiliary file /Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/PlotSwiftTests.build/sources"
+
+  "/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt":
+    tool: write-auxiliary-file
+    inputs: ["<swift-get-version>","/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc"]
+    outputs: ["/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"]
+    always-out-of-date: "true"
+    description: "Write auxiliary file /Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt"
+
+  "<PlotSwift-x86_64-apple-macosx15.0-debug.module>":
+    tool: phony
+    inputs: ["/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/PlotSwift.build/PlotTypes.swift.o","/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/Modules/PlotSwift.swiftmodule"]
+    outputs: ["<PlotSwift-x86_64-apple-macosx15.0-debug.module>"]
+
+  "<PlotSwiftPackageTests-x86_64-apple-macosx15.0-debug.module>":
+    tool: phony
+    inputs: ["/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/PlotSwiftPackageTests.build/runner.swift.o","/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/Modules/PlotSwiftPackageTests.swiftmodule"]
+    outputs: ["<PlotSwiftPackageTests-x86_64-apple-macosx15.0-debug.module>"]
+
+  "<PlotSwiftPackageTests-x86_64-apple-macosx15.0-debug.test>":
+    tool: phony
+    inputs: ["/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/PlotSwiftPackageTests.xctest/Contents/MacOS/PlotSwiftPackageTests"]
+    outputs: ["<PlotSwiftPackageTests-x86_64-apple-macosx15.0-debug.test>"]
+
+  "<PlotSwiftTests-x86_64-apple-macosx15.0-debug.module>":
+    tool: phony
+    inputs: ["/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/PlotSwiftTests.build/PlotTypesTests.swift.o","/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/Modules/PlotSwiftTests.swiftmodule"]
+    outputs: ["<PlotSwiftTests-x86_64-apple-macosx15.0-debug.module>"]
+
+  "C.PlotSwift-x86_64-apple-macosx15.0-debug.module":
+    tool: shell
+    inputs: ["/Users/chris/dev/projects/libraries/PlotSwift/Sources/PlotSwift/PlotTypes.swift","/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt","/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/PlotSwift.build/sources"]
+    outputs: ["/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/PlotSwift.build/PlotTypes.swift.o","/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/Modules/PlotSwift.swiftmodule"]
+    description: "Compiling Swift Module 'PlotSwift' (1 sources)"
+    args: ["/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc","-module-name","PlotSwift","-emit-dependencies","-emit-module","-emit-module-path","/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/Modules/PlotSwift.swiftmodule","-output-file-map","/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/PlotSwift.build/output-file-map.json","-parse-as-library","-incremental","-c","@/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/PlotSwift.build/sources","-I","/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/Modules","-target","x86_64-apple-macosx12.0","-incremental","-enable-batch-mode","-serialize-diagnostics","-index-store-path","/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/index/store","-Onone","-enable-testing","-j16","-DSWIFT_PACKAGE","-DDEBUG","-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE","-module-cache-path","/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/ModuleCache","-parseable-output","-parse-as-library","-emit-objc-header","-emit-objc-header-path","/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/PlotSwift.build/include/PlotSwift-Swift.h","-swift-version","5","-plugin-path","/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing","-sdk","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk","-F","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks","-F","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks","-I","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib","-L","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib","-g","-Xcc","-isysroot","-Xcc","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk","-Xcc","-F","-Xcc","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks","-Xcc","-F","-Xcc","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks","-Xcc","-fPIC","-Xcc","-g","-package-name","plotswift"]
+
+  "C.PlotSwiftPackageTests-x86_64-apple-macosx15.0-debug.module":
+    tool: shell
+    inputs: ["/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/PlotSwiftPackageTests.derived/runner.swift","/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt","/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/Modules/PlotSwiftTests.swiftmodule","/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/PlotSwiftPackageTests.build/sources"]
+    outputs: ["/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/PlotSwiftPackageTests.build/runner.swift.o","/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/Modules/PlotSwiftPackageTests.swiftmodule"]
+    description: "Compiling Swift Module 'PlotSwiftPackageTests' (1 sources)"
+    args: ["/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc","-module-name","PlotSwiftPackageTests","-emit-dependencies","-emit-module","-emit-module-path","/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/Modules/PlotSwiftPackageTests.swiftmodule","-output-file-map","/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/PlotSwiftPackageTests.build/output-file-map.json","-parse-as-library","-incremental","-c","@/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/PlotSwiftPackageTests.build/sources","-I","/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/Modules","-target","x86_64-apple-macosx12.0","-incremental","-enable-batch-mode","-serialize-diagnostics","-index-store-path","/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/index/store","-Onone","-enable-testing","-Xfrontend","-enable-cross-import-overlays","-j16","-DSWIFT_PACKAGE","-DDEBUG","-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE","-module-cache-path","/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/ModuleCache","-parseable-output","-parse-as-library","-emit-objc-header","-emit-objc-header-path","/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/PlotSwiftPackageTests.build/include/PlotSwiftPackageTests-Swift.h","-plugin-path","/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing","-sdk","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk","-F","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks","-F","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks","-I","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib","-L","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib","-g","-Xcc","-isysroot","-Xcc","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk","-Xcc","-F","-Xcc","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks","-Xcc","-F","-Xcc","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks","-Xcc","-fPIC","-Xcc","-g","-package-name","plotswift"]
+
+  "C.PlotSwiftPackageTests-x86_64-apple-macosx15.0-debug.test":
+    tool: shell
+    inputs: ["/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/PlotSwift.build/PlotTypes.swift.o","/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/PlotSwiftPackageTests.build/runner.swift.o","/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/PlotSwiftTests.build/PlotTypesTests.swift.o","/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/PlotSwiftPackageTests.product/Objects.LinkFileList"]
+    outputs: ["/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/PlotSwiftPackageTests.xctest/Contents/MacOS/PlotSwiftPackageTests"]
+    description: "Linking ./.build/x86_64-apple-macosx/debug/PlotSwiftPackageTests.xctest/Contents/MacOS/PlotSwiftPackageTests"
+    args: ["/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc","-L","/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug","-o","/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/PlotSwiftPackageTests.xctest/Contents/MacOS/PlotSwiftPackageTests","-module-name","PlotSwiftPackageTests","-Xlinker","-no_warn_duplicate_libraries","-Xlinker","-bundle","-Xlinker","-rpath","-Xlinker","@loader_path/../../../","@/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/PlotSwiftPackageTests.product/Objects.LinkFileList","-Xlinker","-rpath","-Xlinker","/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift-6.2/macosx","-target","x86_64-apple-macosx14.0","-Xlinker","-add_ast_path","-Xlinker","/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/Modules/PlotSwift.swiftmodule","-Xlinker","-add_ast_path","-Xlinker","/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/Modules/PlotSwiftPackageTests.swiftmodule","-Xlinker","-add_ast_path","-Xlinker","/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/Modules/PlotSwiftTests.swiftmodule","-plugin-path","/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing","-sdk","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk","-F","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks","-F","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks","-I","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib","-L","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib","-g"]
+
+  "C.PlotSwiftTests-x86_64-apple-macosx15.0-debug.module":
+    tool: shell
+    inputs: ["/Users/chris/dev/projects/libraries/PlotSwift/Tests/PlotSwiftTests/PlotTypesTests.swift","/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/swift-version--58304C5D6DBC2206.txt","/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/Modules/PlotSwift.swiftmodule","/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/PlotSwiftTests.build/sources"]
+    outputs: ["/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/PlotSwiftTests.build/PlotTypesTests.swift.o","/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/Modules/PlotSwiftTests.swiftmodule"]
+    description: "Compiling Swift Module 'PlotSwiftTests' (1 sources)"
+    args: ["/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/bin/swiftc","-module-name","PlotSwiftTests","-emit-dependencies","-emit-module","-emit-module-path","/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/Modules/PlotSwiftTests.swiftmodule","-output-file-map","/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/PlotSwiftTests.build/output-file-map.json","-parse-as-library","-incremental","-c","@/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/PlotSwiftTests.build/sources","-I","/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/Modules","-target","x86_64-apple-macosx14.0","-incremental","-enable-batch-mode","-serialize-diagnostics","-index-store-path","/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/index/store","-Onone","-enable-testing","-Xfrontend","-enable-cross-import-overlays","-j16","-DSWIFT_PACKAGE","-DDEBUG","-DSWIFT_MODULE_RESOURCE_BUNDLE_UNAVAILABLE","-module-cache-path","/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/ModuleCache","-parseable-output","-parse-as-library","-swift-version","5","-plugin-path","/Applications/Xcode.app/Contents/Developer/Toolchains/XcodeDefault.xctoolchain/usr/lib/swift/host/plugins/testing","-sdk","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk","-F","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks","-F","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks","-I","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib","-L","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/usr/lib","-g","-Xcc","-isysroot","-Xcc","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/SDKs/MacOSX26.2.sdk","-Xcc","-F","-Xcc","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/Frameworks","-Xcc","-F","-Xcc","/Applications/Xcode.app/Contents/Developer/Platforms/MacOSX.platform/Developer/Library/PrivateFrameworks","-Xcc","-fPIC","-Xcc","-g","-package-name","plotswift"]
+
+  "PackageStructure":
+    tool: package-structure-tool
+    inputs: ["/Users/chris/dev/projects/libraries/PlotSwift/Sources/PlotSwift/","/Users/chris/dev/projects/libraries/PlotSwift/Tests/PlotSwiftTests/","/Users/chris/dev/projects/libraries/PlotSwift/Package.swift","/Users/chris/dev/projects/libraries/PlotSwift/Package.resolved"]
+    outputs: ["<PackageStructure>"]
+    description: "Planning build"
+    allow-missing-inputs: true
+

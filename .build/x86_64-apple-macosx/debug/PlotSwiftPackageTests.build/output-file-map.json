@@ -1,0 +1,12 @@
+{
+  "": {
+    "swift-dependencies": "/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/PlotSwiftPackageTests.build/master.swiftdeps"
+  },
+  "/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/PlotSwiftPackageTests.derived/runner.swift": {
+    "dependencies": "/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/PlotSwiftPackageTests.build/runner.d",
+    "object": "/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/PlotSwiftPackageTests.build/runner.swift.o",
+    "swiftmodule": "/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/PlotSwiftPackageTests.build/runner~partial.swiftmodule",
+    "swift-dependencies": "/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/PlotSwiftPackageTests.build/runner.swiftdeps",
+    "diagnostics": "/Users/chris/dev/projects/libraries/PlotSwift/.build/x86_64-apple-macosx/debug/PlotSwiftPackageTests.build/runner.dia"
+  }
+}

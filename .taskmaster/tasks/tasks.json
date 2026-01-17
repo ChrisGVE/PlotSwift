@@ -1,0 +1,377 @@
+{
+  "master": {
+    "tasks": [
+      {
+        "id": "1",
+        "title": "Gap Analysis: PlotSwift vs matplotlib/seaborn/manim",
+        "description": "Conduct comprehensive API gap analysis comparing PlotSwift to matplotlib, seaborn, and manim. Identify missing features across: plotting functions (line, scatter, bar, histogram, etc.), statistical visualizations, animation capabilities, color maps, axes/figure management, legends, annotations, and styling.",
+        "details": "",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [],
+        "priority": "high",
+        "subtasks": [],
+        "updatedAt": "2026-01-17T11:35:35.811Z"
+      },
+      {
+        "id": "2",
+        "title": "Create Comprehensive README.md",
+        "description": "Create professional README with badges (Swift version, platforms, SPM compatible, license, GitHub release, documentation), overview and design philosophy, installation instructions (SPM), quick start examples, API overview, requirements section, and license section.",
+        "details": "",
+        "testStrategy": "",
+        "status": "done",
+        "dependencies": [
+          "1"
+        ],
+        "priority": "medium",
+        "subtasks": [],
+        "updatedAt": "2026-01-17T11:36:32.664Z"
+      },
+      {
+        "id": "3",
+        "title": "Create DocC Documentation Catalog",
+        "description": "Create PlotSwift.docc directory structure with Documentation.md landing page, Articles (Installation.md, QuickStart.md), and Modules documentation. Add swift-docc-plugin to Package.swift.",
+        "details": "",
+        "testStrategy": "",
+        "status": "pending",
+        "dependencies": [
+          "1"
+        ],
+        "priority": "medium",
+        "subtasks": []
+      },
+      {
+        "id": "4",
+        "title": "Add DocC Comments to All Public APIs",
+        "description": "Review and add comprehensive DocC comments to all public APIs in PlotTypes.swift: Color, TextStyle, LineStyle, MarkerStyle, DrawingCommand, DrawingContext.",
+        "details": "",
+        "testStrategy": "",
+        "status": "pending",
+        "dependencies": [
+          "1"
+        ],
+        "priority": "medium",
+        "subtasks": []
+      },
+      {
+        "id": "5",
+        "title": "Create CHANGELOG.md",
+        "description": "Create CHANGELOG.md following Keep a Changelog format documenting initial 0.1.0 release with all features, dependencies, and requirements.",
+        "details": "",
+        "testStrategy": "",
+        "status": "pending",
+        "dependencies": [
+          "1"
+        ],
+        "priority": "medium",
+        "subtasks": []
+      },
+      {
+        "id": "6",
+        "title": "Test Coverage: All Compilation Combinations",
+        "description": "Ensure all tests pass for: standalone compilation, compilation with NumericSwift, with ArraySwift, and with both NumericSwift and ArraySwift. Add integration tests for library combinations.",
+        "details": "",
+        "testStrategy": "",
+        "status": "pending",
+        "dependencies": [
+          "1"
+        ],
+        "priority": "high",
+        "subtasks": []
+      },
+      {
+        "id": "7",
+        "title": "Final Review and Release 0.1.0",
+        "description": "Verify no compiler warnings, verify DocC generates successfully, push all changes, create release tag 0.1.0, create GitHub release with release notes.",
+        "details": "",
+        "testStrategy": "",
+        "status": "pending",
+        "dependencies": [
+          "2",
+          "3",
+          "4",
+          "5",
+          "6"
+        ],
+        "priority": "high",
+        "subtasks": []
+      },
+      {
+        "id": "8",
+        "title": "Implement SVG Arc-to-Path Conversion",
+        "description": "Fix the partial SVG export by implementing proper arc-to-path conversion in renderToSVG()",
+        "details": "The current SVG export in PlotTypes.swift:771-773 has a placeholder for arc conversion that simply breaks without rendering. Implement the arc-to-path algorithm:\n\n1. Add a private helper method `arcToSVGPath(cx:cy:r:startAngle:endAngle:clockwise:) -> String`\n2. Calculate start and end points using trigonometry: `(cx + r*cos(angle), cy + r*sin(angle))`\n3. Determine large-arc-flag (1 if angle > π, 0 otherwise)\n4. Determine sweep-flag based on clockwise parameter (inverted for SVG coordinate system)\n5. Generate SVG arc command: `M startX,startY A rx,ry rotation large-arc-flag,sweep-flag endX,endY`\n6. Handle full circles (360°) as two half-circle arcs\n7. Apply Y-coordinate flip for SVG coordinate system\n\nPseudo-code:\n```swift\nprivate func arcToSVGPath(cx: Double, cy: Double, r: Double, startAngle: Double, endAngle: Double, clockwise: Bool, size: CGSize) -> String {\n    let startX = cx + r * cos(startAngle)\n    let startY = size.height - (cy + r * sin(startAngle))\n    let endX = cx + r * cos(endAngle)\n    let endY = size.height - (cy + r * sin(endAngle))\n    let angleDiff = abs(endAngle - startAngle)\n    let largeArcFlag = angleDiff > .pi ? 1 : 0\n    let sweepFlag = clockwise ? 0 : 1  // Inverted for SVG\n    return \"M\\(startX),\\(startY) A\\(r),\\(r) 0 \\(largeArcFlag),\\(sweepFlag) \\(endX),\\(endY)\"\n}\n```",
+        "testStrategy": "1. Unit test arc conversion with various angles (0-90°, 90-180°, 180-270°, 270-360°, full circle)\n2. Test clockwise vs counterclockwise arcs\n3. Test arcs at different positions and radii\n4. Verify SVG output contains valid A commands\n5. Visual verification by rendering SVG in browser and comparing to PNG output",
+        "priority": "high",
+        "dependencies": [],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": "9",
+        "title": "Implement Marker Rendering",
+        "description": "Add rendering support for MarkerStyle enum which currently exists but has no rendering implementation",
+        "details": "MarkerStyle enum exists at PlotTypes.swift:182-195 but markers are never rendered. Implement marker drawing:\n\n1. Add `drawMarker(style:x:y:size:)` method to DrawingContext\n2. Implement each marker shape using existing primitives:\n   - circle: Use existing `circle()` method\n   - square: Use `rect()` centered on point\n   - diamond: Use `moveTo/lineTo` to draw rotated square\n   - triangleUp/Down/Left/Right: Use `moveTo/lineTo` for triangular paths\n   - plus: Two crossed lines\n   - cross (x): Two diagonal crossed lines\n   - star: Five-pointed star using lines\n   - dot: Small filled circle\n3. Add `.marker()` DrawingCommand case for retained-mode storage\n4. Update `render(to:size:)` to handle marker commands\n5. Update `renderToSVG(size:)` to emit appropriate SVG shapes\n\nPseudo-code:\n```swift\npublic func drawMarker(style: MarkerStyle, x: Double, y: Double, size: Double = 6.0) {\n    guard style != .none else { return }\n    commands.append(.marker(style: style, x: x, y: y, size: size))\n}\n```",
+        "testStrategy": "1. Unit test each marker style generates correct command\n2. Test marker at various positions and sizes\n3. Test .none style produces no output\n4. Verify PNG/PDF render contains marker shapes\n5. Verify SVG contains appropriate path/shape elements\n6. Visual comparison tests for all 11 marker types",
+        "priority": "high",
+        "dependencies": [],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": "10",
+        "title": "Implement Color Palettes and Color Cycle",
+        "description": "Create categorical and sequential color palettes with automatic color cycling for multiple data series",
+        "details": "Implement color palette infrastructure for automatic series coloring:\n\n1. Create `ColorPalette` struct with predefined palettes:\n   - tab10: matplotlib's default 10-color categorical palette\n   - Set1, Set2, Set3: Brewer qualitative palettes\n   - viridis, plasma, magma, inferno: Perceptually uniform sequential palettes\n   - coolwarm, seismic: Diverging palettes\n\n2. Implement color interpolation for sequential/diverging palettes:\n   - `func color(at: Double) -> Color` where input is 0.0-1.0\n   - Linear interpolation between palette colors\n\n3. Create `ColorCycle` class for automatic series coloring:\n   - Tracks current index, wraps around\n   - `func next() -> Color`\n   - `func reset()`\n   - `func setColormap(_ palette: ColorPalette)`\n\n4. Add static palette accessors: `ColorPalette.tab10`, `ColorPalette.viridis`, etc.\n\nPseudo-code:\n```swift\npublic struct ColorPalette {\n    public let colors: [Color]\n    public let name: String\n    \n    public func color(at t: Double) -> Color {\n        // Interpolate for continuous palettes\n    }\n    \n    public static let tab10 = ColorPalette(name: \"tab10\", colors: [...])\n    public static let viridis = ColorPalette(name: \"viridis\", colors: [...])\n}\n```",
+        "testStrategy": "1. Unit test each predefined palette has expected number of colors\n2. Test color interpolation at 0.0, 0.5, 1.0 and intermediate values\n3. Test ColorCycle wraps correctly after exhausting colors\n4. Test reset() returns to first color\n5. Test palette lookup by name\n6. Visual test generating swatches of all palettes",
+        "priority": "high",
+        "dependencies": [],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": "11",
+        "title": "Create DataRange and Axis Limit Computation",
+        "description": "Implement automatic data range detection and axis limit computation with padding",
+        "details": "Create data range infrastructure for auto-scaling axes:\n\n1. Create `DataRange` struct:\n   - Properties: `min: Double`, `max: Double`\n   - Computed: `span`, `center`, `isEmpty`\n   - Methods: `expanded(by:)`, `union(with:)`, `contains(_:)`\n   - Static: `from([Double])` - compute range from array\n\n2. Implement `NiceNumbers` for tick computation:\n   - Find 'nice' numbers for axis limits (round to 1, 2, 5, 10 multiples)\n   - Calculate appropriate tick spacing\n   - Algorithm: find magnitude, then nearest nice number\n\n3. Create `AxisLimits` struct:\n   - `xRange: DataRange`, `yRange: DataRange`\n   - `func withPadding(_ percent: Double)` - add margin\n   - `func niceExpanded()` - expand to nice numbers\n\n4. Handle edge cases:\n   - Single data point: expand by ±1 or ±10%\n   - All same values: similar handling\n   - Empty data: return nil or zero range\n\nPseudo-code:\n```swift\npublic struct DataRange {\n    public let min: Double\n    public let max: Double\n    \n    public static func from(_ values: [Double]) -> DataRange? {\n        guard let minVal = values.min(), let maxVal = values.max() else { return nil }\n        return DataRange(min: minVal, max: maxVal)\n    }\n    \n    public func niceExpanded(targetTicks: Int = 5) -> (range: DataRange, tickSpacing: Double) {\n        // Implement nice number algorithm\n    }\n}\n```",
+        "testStrategy": "1. Test DataRange.from() with various arrays including empty, single value, duplicates\n2. Test range union combines correctly\n3. Test padding expands symmetrically\n4. Test nice number algorithm produces expected values (e.g., 0.17-0.83 becomes 0-1 with 0.2 spacing)\n5. Test edge cases: negative ranges, zero-crossing ranges, very large/small numbers\n6. Test tick spacing produces reasonable number of ticks (3-10)",
+        "priority": "high",
+        "dependencies": [],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": "12",
+        "title": "Implement Coordinate Transform System",
+        "description": "Create transformation system to convert between data coordinates and pixel/screen coordinates",
+        "details": "Implement coordinate transformation for mapping data to screen:\n\n1. Create `CoordinateTransform` protocol:\n   - `func dataToPixel(x: Double, y: Double) -> (Double, Double)`\n   - `func pixelToData(x: Double, y: Double) -> (Double, Double)`\n\n2. Implement `LinearTransform` struct conforming to protocol:\n   - Properties: `dataRange: AxisLimits`, `pixelBounds: CGRect`\n   - Handles linear scaling and translation\n   - Y-axis inversion (data y-up, pixel y-down)\n\n3. Implement `LogTransform` for logarithmic scales (future extension point)\n\n4. Create `PlotArea` struct:\n   - `bounds: CGRect` - total figure area\n   - `plotRect: CGRect` - area for actual data (inside axes)\n   - `margins: EdgeInsets` - space for labels, ticks, title\n   - Method to compute plotRect from bounds and margins\n\n5. Handle aspect ratio preservation option\n\nPseudo-code:\n```swift\npublic struct LinearTransform: CoordinateTransform {\n    public let dataRange: AxisLimits\n    public let pixelBounds: CGRect\n    \n    public func dataToPixel(x: Double, y: Double) -> (Double, Double) {\n        let px = pixelBounds.minX + (x - dataRange.xRange.min) / dataRange.xRange.span * pixelBounds.width\n        let py = pixelBounds.maxY - (y - dataRange.yRange.min) / dataRange.yRange.span * pixelBounds.height\n        return (px, py)\n    }\n}\n```",
+        "testStrategy": "1. Test data-to-pixel conversion at range boundaries maps to pixel boundaries\n2. Test pixel-to-data is inverse of data-to-pixel\n3. Test Y-axis inversion (higher data Y = lower pixel Y)\n4. Test with various aspect ratios\n5. Test with negative data ranges\n6. Test PlotArea margin calculation\n7. Round-trip test: data → pixel → data equals original",
+        "priority": "high",
+        "dependencies": [
+          "11"
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": "13",
+        "title": "Implement Axes Class",
+        "description": "Create the Axes class representing a single plot area with coordinate system, data series, and visual elements",
+        "details": "Implement the core Axes class that represents a single plot:\n\n1. Create `Axes` class:\n   - Properties: `plotArea: PlotArea`, `transform: CoordinateTransform`\n   - `dataSeries: [DataSeries]` - stored plot data\n   - `title: String?`, `xLabel: String?`, `yLabel: String?`\n   - `xLimits: DataRange?`, `yLimits: DataRange?` (nil = auto)\n   - `showGrid: Bool`, `gridStyle: LineStyle`\n   - `colorCycle: ColorCycle`\n\n2. Create `DataSeries` struct for storing plot data:\n   - `x: [Double]`, `y: [Double]`\n   - `label: String?`\n   - `color: Color?`, `lineStyle: LineStyle?`, `marker: MarkerStyle?`\n   - `lineWidth: Double?`, `markerSize: Double?`\n\n3. Implement axis configuration methods:\n   - `setXLim(_ min: Double, _ max: Double)`\n   - `setYLim(_ min: Double, _ max: Double)`\n   - `setTitle(_ title: String)`\n   - `setXLabel(_ label: String)`\n   - `setYLabel(_ label: String)`\n   - `grid(_ show: Bool, style: LineStyle)`\n\n4. Implement internal rendering:\n   - `render(to context: DrawingContext)` - draw all elements\n\nPseudo-code:\n```swift\npublic class Axes {\n    private var dataSeries: [DataSeries] = []\n    private var title: String?\n    private var xLabel: String?\n    private var yLabel: String?\n    \n    public func setXLim(_ min: Double, _ max: Double) {\n        xLimits = DataRange(min: min, max: max)\n    }\n    \n    internal func render(to context: DrawingContext) {\n        drawBackground()\n        drawGridIfEnabled()\n        drawAxes()\n        drawDataSeries()\n        drawLabelsAndTitle()\n    }\n}\n```",
+        "testStrategy": "1. Test Axes creation with default values\n2. Test setXLim/setYLim store limits correctly\n3. Test adding data series increases series count\n4. Test auto-limit computation when limits not set\n5. Test render produces DrawingContext with expected commands\n6. Test title/label methods store values\n7. Test grid toggle affects render output\n8. Integration test: complete axes renders valid image",
+        "priority": "high",
+        "dependencies": [
+          "10",
+          "11",
+          "12"
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": "14",
+        "title": "Implement Figure Class",
+        "description": "Create the Figure class as container for one or more Axes with layout management",
+        "details": "Implement Figure class as the top-level container:\n\n1. Create `Figure` class:\n   - Properties: `size: CGSize`, `backgroundColor: Color`\n   - `axes: [Axes]` - one or more subplots\n   - `dpi: Double` - for export resolution\n\n2. Implement single-axes convenience:\n   - `addAxes() -> Axes` - add axes filling entire figure\n   - `addAxes(rect: CGRect) -> Axes` - add axes at specific location\n\n3. Implement subplot support (basic grid):\n   - `addSubplot(rows: Int, cols: Int, index: Int) -> Axes`\n   - Calculate appropriate rect for each subplot position\n\n4. Implement export methods:\n   - `savePNG(to url: URL, scale: Double)` or `renderToPNG() -> Data?`\n   - `savePDF(to url: URL)` or `renderToPDF() -> Data?`\n   - `saveSVG(to url: URL)` or `renderToSVG() -> String`\n\n5. Internal render orchestration:\n   - Create DrawingContext\n   - Draw background\n   - Render each Axes to context\n   - Export via context methods\n\nPseudo-code:\n```swift\npublic class Figure {\n    public let size: CGSize\n    private var axesList: [Axes] = []\n    \n    public init(width: Double = 800, height: Double = 600) {\n        self.size = CGSize(width: width, height: height)\n    }\n    \n    public func addAxes() -> Axes {\n        let axes = Axes(plotArea: PlotArea(bounds: CGRect(origin: .zero, size: size)))\n        axesList.append(axes)\n        return axes\n    }\n    \n    public func renderToPNG() -> Data? {\n        let ctx = DrawingContext()\n        for axes in axesList {\n            axes.render(to: ctx)\n        }\n        return ctx.renderToPNG(size: size)\n    }\n}\n```",
+        "testStrategy": "1. Test Figure creation with custom size\n2. Test addAxes() returns valid Axes instance\n3. Test addSubplot calculates correct rects for various grid sizes\n4. Test multiple axes can be added\n5. Test renderToPNG/PDF/SVG produce valid output\n6. Test subplot indices wrap correctly\n7. Integration test: create figure with subplots, add data, export",
+        "priority": "high",
+        "dependencies": [
+          "13"
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": "15",
+        "title": "Implement Tick Generation and Rendering",
+        "description": "Create automatic tick generation with nice numbers and tick mark rendering",
+        "details": "Implement axis tick generation and rendering:\n\n1. Create `TickGenerator` struct:\n   - `func generateTicks(range: DataRange, maxTicks: Int) -> [Double]`\n   - Use nice number algorithm from task 11\n   - Handle edge cases (very small ranges, negative values)\n\n2. Create `TickFormatter` protocol and implementations:\n   - `func format(_ value: Double) -> String`\n   - `DefaultFormatter`: Smart formatting (int if whole, otherwise decimal)\n   - `ScientificFormatter`: Use 1.2e+3 notation\n   - `PercentFormatter`: Multiply by 100, add %\n\n3. Create `AxisRenderer` helper:\n   - Draw axis line\n   - Draw tick marks (inner, outer, or both)\n   - Draw tick labels with proper positioning\n   - Handle horizontal (X) and vertical (Y) axes\n\n4. Tick customization options:\n   - `setXTicks(_ positions: [Double])` - manual positions\n   - `setXTickLabels(_ labels: [String])` - custom labels\n   - `tickLength: Double`, `tickDirection: TickDirection`\n\nPseudo-code:\n```swift\npublic struct TickGenerator {\n    public func generateTicks(range: DataRange, maxTicks: Int = 10) -> [Double] {\n        let (_, spacing) = range.niceExpanded(targetTicks: maxTicks)\n        let start = ceil(range.min / spacing) * spacing\n        var ticks: [Double] = []\n        var t = start\n        while t <= range.max {\n            ticks.append(t)\n            t += spacing\n        }\n        return ticks\n    }\n}\n```",
+        "testStrategy": "1. Test tick generation produces reasonable number of ticks (3-10)\n2. Test ticks are evenly spaced\n3. Test ticks fall within data range\n4. Test manual tick positions override automatic\n5. Test tick formatters produce expected strings\n6. Test rendering places tick marks at correct pixel positions\n7. Test tick labels are positioned without overlap\n8. Test vertical axis label rotation",
+        "priority": "high",
+        "dependencies": [
+          "11",
+          "13"
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": "16",
+        "title": "Implement plot() Line Plot Function",
+        "description": "Create the core line plot function accepting x/y arrays with color, line style, and marker options",
+        "details": "Implement matplotlib-style plot() function:\n\n1. Add to Axes class:\n   ```swift\n   @discardableResult\n   public func plot(\n       _ x: [Double],\n       _ y: [Double],\n       color: Color? = nil,\n       lineStyle: LineStyle = .solid,\n       lineWidth: Double = 1.5,\n       marker: MarkerStyle = .none,\n       markerSize: Double = 6.0,\n       label: String? = nil\n   ) -> DataSeries\n   ```\n\n2. Implementation:\n   - Validate x.count == y.count, throw/return early if not\n   - Create DataSeries with provided parameters\n   - If color is nil, get next from colorCycle\n   - Store in dataSeries array\n   - Update auto-limits if needed\n   - Return series for chaining\n\n3. Rendering in Axes.render():\n   - Transform each (x,y) point to pixel coordinates\n   - Draw line segments with moveTo/lineTo\n   - Draw markers at each point if marker != .none\n   - Apply color, line style, line width\n\n4. Add convenience overload for y-only data (x = indices):\n   ```swift\n   public func plot(_ y: [Double], ...) -> DataSeries\n   ```\n\nPseudo-code:\n```swift\npublic func plot(_ x: [Double], _ y: [Double], color: Color? = nil, ...) -> DataSeries {\n    precondition(x.count == y.count, \"x and y must have same length\")\n    let actualColor = color ?? colorCycle.next()\n    let series = DataSeries(x: x, y: y, color: actualColor, ...)\n    dataSeries.append(series)\n    return series\n}\n```",
+        "testStrategy": "1. Test plot() adds series to axes\n2. Test auto-color cycling when color not specified\n3. Test explicit color overrides cycle\n4. Test mismatched x/y lengths throws/handles error\n5. Test line style affects rendered output\n6. Test markers appear at data points\n7. Test y-only convenience uses 0-based indices for x\n8. Integration: plot sine wave, verify visual output\n9. Test multiple plot() calls layer correctly",
+        "priority": "high",
+        "dependencies": [
+          "9",
+          "13",
+          "14"
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": "17",
+        "title": "Implement scatter() Scatter Plot Function",
+        "description": "Create scatter plot function with support for per-point colors and sizes",
+        "details": "Implement scatter plot function:\n\n1. Add to Axes class:\n   ```swift\n   @discardableResult\n   public func scatter(\n       _ x: [Double],\n       _ y: [Double],\n       color: ScatterColor = .single(.blue),\n       marker: MarkerStyle = .circle,\n       size: ScatterSize = .single(36.0),\n       alpha: Double = 1.0,\n       label: String? = nil\n   ) -> DataSeries\n   ```\n\n2. Create helper enums for per-point variation:\n   ```swift\n   public enum ScatterColor {\n       case single(Color)\n       case array([Color])\n       case mapped([Double], palette: ColorPalette)\n   }\n   \n   public enum ScatterSize {\n       case single(Double)\n       case array([Double])\n   }\n   ```\n\n3. Implementation:\n   - Validate array lengths match\n   - Store data with per-point attributes\n   - Render each point as marker with individual color/size\n\n4. Rendering:\n   - Loop through points\n   - Apply individual color/size/alpha\n   - Draw marker at transformed position\n\nPseudo-code:\n```swift\npublic func scatter(_ x: [Double], _ y: [Double], color: ScatterColor = .single(.blue), size: ScatterSize = .single(36.0), ...) -> DataSeries {\n    // For array colors/sizes, validate lengths\n    if case .array(let colors) = color {\n        precondition(colors.count == x.count)\n    }\n    // Create and store series\n}\n```",
+        "testStrategy": "1. Test scatter creates points at correct positions\n2. Test single color applies to all points\n3. Test array colors apply individually\n4. Test mapped colors use palette correctly\n5. Test single size applies uniformly\n6. Test array sizes vary point sizes\n7. Test alpha affects transparency\n8. Test various marker styles\n9. Visual test: scatter with color-mapped values\n10. Test empty arrays handle gracefully",
+        "priority": "high",
+        "dependencies": [
+          "9",
+          "13",
+          "14"
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": "18",
+        "title": "Implement Legend Support",
+        "description": "Create legend functionality with automatic label collection and positioning options",
+        "details": "Implement legend for labeling data series:\n\n1. Create `Legend` struct:\n   - `entries: [LegendEntry]`\n   - `position: LegendPosition`\n   - `frameOn: Bool` - draw border\n   - `backgroundColor: Color?`\n\n2. Create `LegendEntry` struct:\n   - `label: String`\n   - `color: Color`\n   - `lineStyle: LineStyle?`\n   - `marker: MarkerStyle?`\n\n3. Create `LegendPosition` enum:\n   - `.topRight`, `.topLeft`, `.bottomRight`, `.bottomLeft`\n   - `.right`, `.left`, `.top`, `.bottom` (outside plot)\n   - `.custom(x: Double, y: Double)` - normalized 0-1 coords\n\n4. Add to Axes:\n   ```swift\n   public func legend(\n       position: LegendPosition = .topRight,\n       frameOn: Bool = true\n   )\n   ```\n   - Automatically collect labels from dataSeries\n   - Only include series with non-nil labels\n\n5. Legend rendering:\n   - Calculate legend size based on entry count and text\n   - Position within or outside plot area\n   - Draw background, border, entries with sample line/marker\n\nPseudo-code:\n```swift\npublic func legend(position: LegendPosition = .topRight, frameOn: Bool = true) {\n    let entries = dataSeries.compactMap { series -> LegendEntry? in\n        guard let label = series.label else { return nil }\n        return LegendEntry(label: label, color: series.color, lineStyle: series.lineStyle, marker: series.marker)\n    }\n    self.legend = Legend(entries: entries, position: position, frameOn: frameOn)\n}\n```",
+        "testStrategy": "1. Test legend collects only labeled series\n2. Test all position options place legend correctly\n3. Test frameOn draws/hides border\n4. Test legend entries show correct colors/styles\n5. Test legend doesn't overlap plot data\n6. Test custom position works with normalized coords\n7. Test empty legend (no labels) handles gracefully\n8. Visual test: multi-series plot with legend",
+        "priority": "high",
+        "dependencies": [
+          "13",
+          "16",
+          "17"
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": "19",
+        "title": "Implement Grid Lines",
+        "description": "Add grid line rendering with customizable style for major and minor grids",
+        "details": "Implement configurable grid lines:\n\n1. Add grid properties to Axes:\n   - `showGrid: Bool`\n   - `gridColor: Color` (default: light gray)\n   - `gridLineStyle: LineStyle` (default: solid)\n   - `gridLineWidth: Double` (default: 0.5)\n   - `showMinorGrid: Bool`\n   - `minorGridColor: Color`\n\n2. Add grid configuration method:\n   ```swift\n   public func grid(\n       _ show: Bool = true,\n       which: GridType = .major,\n       axis: GridAxis = .both,\n       color: Color = .lightGray,\n       lineStyle: LineStyle = .solid,\n       lineWidth: Double = 0.5\n   )\n   ```\n\n3. Create supporting enums:\n   ```swift\n   public enum GridType { case major, minor, both }\n   public enum GridAxis { case x, y, both }\n   ```\n\n4. Grid rendering:\n   - Get tick positions from TickGenerator\n   - Draw vertical lines at X tick positions\n   - Draw horizontal lines at Y tick positions\n   - For minor grid: subdivide tick intervals (typically 5x)\n   - Draw grid behind data (render first)\n\nPseudo-code:\n```swift\nprivate func renderGrid(to context: DrawingContext) {\n    guard showGrid else { return }\n    context.setStrokeColor(gridColor)\n    context.setStrokeWidth(gridLineWidth)\n    context.setStrokeStyle(gridLineStyle)\n    \n    for tickX in xTicks {\n        let (px, _) = transform.dataToPixel(x: tickX, y: 0)\n        context.moveTo(px, plotArea.top)\n        context.lineTo(px, plotArea.bottom)\n    }\n    // Similar for Y axis\n    context.strokePath()\n}\n```",
+        "testStrategy": "1. Test grid off by default\n2. Test grid(true) enables grid\n3. Test grid lines appear at tick positions\n4. Test x-only and y-only grid options\n5. Test custom grid color/style/width\n6. Test minor grid subdivides major intervals\n7. Test grid renders behind data\n8. Visual test: plot with grid enabled",
+        "priority": "medium",
+        "dependencies": [
+          "13",
+          "15"
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": "20",
+        "title": "Implement Bar Charts",
+        "description": "Create vertical and horizontal bar chart functions with grouped and stacked options",
+        "details": "Implement bar chart functions:\n\n1. Add to Axes class:\n   ```swift\n   @discardableResult\n   public func bar(\n       _ x: [Double],\n       _ heights: [Double],\n       width: Double = 0.8,\n       bottom: [Double]? = nil,\n       color: Color? = nil,\n       edgeColor: Color = .black,\n       lineWidth: Double = 0.5,\n       label: String? = nil\n   ) -> DataSeries\n   \n   @discardableResult  \n   public func barh(\n       _ y: [Double],\n       _ widths: [Double],\n       height: Double = 0.8,\n       left: [Double]? = nil,\n       ...\n   ) -> DataSeries\n   ```\n\n2. Support grouped bars:\n   - Multiple bar() calls with offset x positions\n   - Helper: `func groupedBar(data: [[Double]], groupLabels: [String], seriesLabels: [String])`\n\n3. Support stacked bars:\n   - Use `bottom` parameter to stack on previous series\n   - Helper: cumulative sum for stacking\n\n4. Bar rendering:\n   - Calculate bar rect from x position, width, height\n   - Transform to pixel coordinates\n   - Draw filled rectangle with stroke\n\n5. Auto-adjust x-axis for categorical data:\n   - setXTickLabels for category names\n   - Center ticks on bar positions\n\nPseudo-code:\n```swift\npublic func bar(_ x: [Double], _ heights: [Double], width: Double = 0.8, bottom: [Double]? = nil, ...) -> DataSeries {\n    let baseY = bottom ?? Array(repeating: 0.0, count: heights.count)\n    // Store bar data\n    // Rendering draws rects from (x - width/2, baseY) to (x + width/2, baseY + height)\n}\n```",
+        "testStrategy": "1. Test bar creates rectangles at correct positions\n2. Test bar width parameter scales bars\n3. Test bottom parameter offsets bar bases (for stacking)\n4. Test barh creates horizontal bars\n5. Test grouped bars don't overlap\n6. Test stacked bars sum correctly\n7. Test edge color and line width render\n8. Test categorical labels on x-axis\n9. Visual test: grouped bar chart, stacked bar chart",
+        "priority": "high",
+        "dependencies": [
+          "13",
+          "14",
+          "15"
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": "21",
+        "title": "Implement Histogram Function",
+        "description": "Create histogram function with automatic binning and normalization options",
+        "details": "Implement histogram function:\n\n1. Add to Axes class:\n   ```swift\n   @discardableResult\n   public func hist(\n       _ data: [Double],\n       bins: HistogramBins = .auto,\n       range: (Double, Double)? = nil,\n       density: Bool = false,\n       cumulative: Bool = false,\n       color: Color? = nil,\n       edgeColor: Color = .black,\n       alpha: Double = 1.0,\n       label: String? = nil\n   ) -> (counts: [Int], binEdges: [Double])\n   ```\n\n2. Create `HistogramBins` enum:\n   ```swift\n   public enum HistogramBins {\n       case auto          // Sturges' rule or similar\n       case count(Int)    // Fixed number of bins\n       case edges([Double]) // Explicit bin edges\n       case width(Double) // Fixed bin width\n   }\n   ```\n\n3. Binning algorithms:\n   - Sturges: `1 + log2(n)`\n   - Freedman-Diaconis (optional): `2 * IQR / n^(1/3)`\n   - Calculate bin edges from range and count\n\n4. Histogram computation:\n   - Count values in each bin\n   - For density: normalize by (count / total / bin_width)\n   - For cumulative: running sum\n\n5. Render using bar() internally:\n   - Bar at each bin center\n   - Width = bin width\n   - Height = count or density\n\nPseudo-code:\n```swift\npublic func hist(_ data: [Double], bins: HistogramBins = .auto, density: Bool = false, ...) -> (counts: [Int], binEdges: [Double]) {\n    let binCount = resolveBinCount(bins, data: data)\n    let edges = computeBinEdges(data: data, count: binCount, range: range)\n    var counts = [Int](repeating: 0, count: binCount)\n    \n    for value in data {\n        if let binIndex = findBin(value, edges: edges) {\n            counts[binIndex] += 1\n        }\n    }\n    \n    let heights = density ? normalize(counts, edges) : counts.map { Double($0) }\n    // Render as bars\n    return (counts, edges)\n}\n```",
+        "testStrategy": "1. Test auto bin count uses Sturges' formula\n2. Test explicit bin count creates correct number\n3. Test bin edges are evenly spaced\n4. Test counts sum to data length\n5. Test density normalization integrates to 1\n6. Test cumulative reaches total count\n7. Test range parameter limits included data\n8. Test values on bin edges handled consistently\n9. Visual test: histogram of normal distribution",
+        "priority": "high",
+        "dependencies": [
+          "20"
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": "22",
+        "title": "Implement Annotations and Reference Lines",
+        "description": "Add text annotations with arrows and horizontal/vertical reference lines and spans",
+        "details": "Implement annotation and reference line functions:\n\n1. Text annotations with arrows:\n   ```swift\n   public func annotate(\n       _ text: String,\n       xy: (Double, Double),       // Point to annotate\n       xytext: (Double, Double)?,  // Text position (nil = same as xy)\n       arrowprops: ArrowProps? = nil,\n       fontsize: Double = 12,\n       color: Color = .black\n   )\n   ```\n\n2. Create `ArrowProps` struct:\n   ```swift\n   public struct ArrowProps {\n       var arrowstyle: ArrowStyle = .simple\n       var color: Color = .black\n       var lineWidth: Double = 1.0\n   }\n   public enum ArrowStyle { case simple, fancy, wedge }\n   ```\n\n3. Reference lines:\n   ```swift\n   public func axhline(y: Double, color: Color = .black, lineStyle: LineStyle = .solid, lineWidth: Double = 1.0)\n   public func axvline(x: Double, color: Color = .black, lineStyle: LineStyle = .solid, lineWidth: Double = 1.0)\n   ```\n\n4. Reference spans (shaded regions):\n   ```swift\n   public func axhspan(ymin: Double, ymax: Double, color: Color, alpha: Double = 0.3)\n   public func axvspan(xmin: Double, xmax: Double, color: Color, alpha: Double = 0.3)\n   ```\n\n5. Arrow rendering:\n   - Draw line from xytext to xy\n   - Draw arrowhead at xy point\n   - Arrowhead as small triangle\n\nPseudo-code:\n```swift\npublic func annotate(_ text: String, xy: (Double, Double), xytext: (Double, Double)? = nil, arrowprops: ArrowProps? = nil, ...) {\n    let textPos = xytext ?? xy\n    // Store annotation for rendering\n    annotations.append(Annotation(text: text, point: xy, textPosition: textPos, arrow: arrowprops, ...))\n}\n\npublic func axhline(y: Double, ...) {\n    // Draw horizontal line spanning entire x-axis at y coordinate\n}\n```",
+        "testStrategy": "1. Test annotate places text at correct position\n2. Test arrow draws from text to point\n3. Test annotation without arrow (arrowprops = nil)\n4. Test axhline spans full width at y coordinate\n5. Test axvline spans full height at x coordinate\n6. Test axhspan fills region between y values\n7. Test axvspan fills region between x values\n8. Test alpha affects span transparency\n9. Visual test: annotated plot with reference lines",
+        "priority": "medium",
+        "dependencies": [
+          "13"
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": "23",
+        "title": "Implement Error Bars",
+        "description": "Create errorbar function for plots with symmetric and asymmetric error bars",
+        "details": "Implement error bar plotting:\n\n1. Add to Axes class:\n   ```swift\n   @discardableResult\n   public func errorbar(\n       _ x: [Double],\n       _ y: [Double],\n       yerr: ErrorBarValue? = nil,\n       xerr: ErrorBarValue? = nil,\n       color: Color? = nil,\n       lineStyle: LineStyle = .solid,\n       lineWidth: Double = 1.5,\n       capsize: Double = 3.0,\n       marker: MarkerStyle = .circle,\n       label: String? = nil\n   ) -> DataSeries\n   ```\n\n2. Create `ErrorBarValue` enum:\n   ```swift\n   public enum ErrorBarValue {\n       case symmetric(Double)           // Same error for all points\n       case symmetricArray([Double])    // Per-point symmetric error\n       case asymmetric([Double], [Double])  // (lower, upper) per point\n   }\n   ```\n\n3. Error bar rendering:\n   - Draw main data as line/markers using plot()\n   - For each point with error:\n     - Draw vertical line from (x, y-err) to (x, y+err)\n     - Draw horizontal caps at ends\n   - Similar for xerr (horizontal error bars)\n\n4. Cap rendering:\n   - Short horizontal lines at error bar ends\n   - Length controlled by capsize parameter\n\nPseudo-code:\n```swift\npublic func errorbar(_ x: [Double], _ y: [Double], yerr: ErrorBarValue? = nil, xerr: ErrorBarValue? = nil, capsize: Double = 3.0, ...) -> DataSeries {\n    // First draw the line/markers\n    let series = plot(x, y, color: color, lineStyle: lineStyle, marker: marker, label: label)\n    \n    // Then draw error bars\n    if let yerr = yerr {\n        for (i, (xi, yi)) in zip(x, y).enumerated() {\n            let (lower, upper) = resolveError(yerr, index: i)\n            // Draw vertical line and caps\n        }\n    }\n    return series\n}\n```",
+        "testStrategy": "1. Test symmetric error bars are equal above/below\n2. Test asymmetric error bars differ above/below\n3. Test per-point errors vary correctly\n4. Test xerr creates horizontal error bars\n5. Test both xerr and yerr simultaneously\n6. Test capsize affects cap width\n7. Test error bars inherit series color\n8. Test markers appear at data points\n9. Visual test: errorbar plot with varied errors",
+        "priority": "medium",
+        "dependencies": [
+          "16"
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": "24",
+        "title": "Implement fill_between Area Fills",
+        "description": "Create fill_between function for shading areas between curves or to baseline",
+        "details": "Implement area fill functions:\n\n1. Add to Axes class:\n   ```swift\n   public func fillBetween(\n       _ x: [Double],\n       _ y1: [Double],\n       _ y2: [Double]? = nil,  // nil = fill to 0\n       where: [Bool]? = nil,   // conditional fill\n       color: Color? = nil,\n       alpha: Double = 0.3,\n       lineWidth: Double = 0,\n       edgeColor: Color? = nil,\n       label: String? = nil\n   )\n   \n   public func fillBetweenX(\n       _ y: [Double],\n       _ x1: [Double],\n       _ x2: [Double]? = nil,\n       ...\n   )\n   ```\n\n2. Implementation:\n   - If y2 is nil, use zeros as baseline\n   - Create closed polygon: forward along y1, backward along y2\n   - If `where` array provided, only fill segments where condition is true\n\n3. Polygon construction:\n   ```\n   moveTo(x[0], y1[0])\n   for each point: lineTo(x[i], y1[i])\n   for each point reversed: lineTo(x[i], y2[i] or 0)\n   closePath()\n   fill with alpha\n   ```\n\n4. Conditional filling:\n   - Split into separate polygons at where=false boundaries\n   - Handle edge cases at array boundaries\n\nPseudo-code:\n```swift\npublic func fillBetween(_ x: [Double], _ y1: [Double], _ y2: [Double]? = nil, where: [Bool]? = nil, alpha: Double = 0.3, ...) {\n    let baseline = y2 ?? Array(repeating: 0.0, count: y1.count)\n    \n    // Build polygon path\n    // Forward along y1, backward along y2\n    // Fill with semi-transparent color\n}\n```",
+        "testStrategy": "1. Test fill to zero baseline (y2 = nil)\n2. Test fill between two curves\n3. Test alpha affects transparency\n4. Test edge color draws outline\n5. Test where condition creates gaps\n6. Test fillBetweenX for horizontal fills\n7. Test arrays of different lengths error\n8. Visual test: confidence interval shading",
+        "priority": "medium",
+        "dependencies": [
+          "16"
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": "25",
+        "title": "Implement Subplots and Grid Layout",
+        "description": "Create subplots function for multiple plots in grid layout with shared axes support",
+        "details": "Implement subplot grid layout:\n\n1. Add convenience function at module level:\n   ```swift\n   public func subplots(\n       rows: Int = 1,\n       cols: Int = 1,\n       figsize: (Double, Double) = (8.0, 6.0),\n       sharex: Bool = false,\n       sharey: Bool = false\n   ) -> (Figure, [[Axes]])\n   ```\n\n2. Return 2D array of Axes for easy indexing:\n   - `axes[row][col]` access pattern\n   - For single row/col, still return 2D array for consistency\n\n3. Calculate subplot rects:\n   - Account for inter-subplot spacing\n   - Account for outer margins (for labels)\n   - Equal-size subplots in grid\n\n4. Shared axes support:\n   - sharex: all columns share x-axis limits and ticks\n   - sharey: all rows share y-axis limits and ticks\n   - Only draw labels on edge axes when sharing\n\n5. Add spacing parameters:\n   - `hspace`: height spacing between subplots\n   - `wspace`: width spacing between subplots\n\nPseudo-code:\n```swift\npublic func subplots(rows: Int = 1, cols: Int = 1, figsize: (Double, Double) = (8.0, 6.0), sharex: Bool = false, sharey: Bool = false) -> (Figure, [[Axes]]) {\n    let fig = Figure(width: figsize.0 * 100, height: figsize.1 * 100)\n    var axesGrid: [[Axes]] = []\n    \n    for row in 0..<rows {\n        var rowAxes: [Axes] = []\n        for col in 0..<cols {\n            let rect = calculateSubplotRect(row: row, col: col, rows: rows, cols: cols, figSize: fig.size)\n            let ax = fig.addAxes(rect: rect)\n            if sharex { /* link x-axis */ }\n            if sharey { /* link y-axis */ }\n            rowAxes.append(ax)\n        }\n        axesGrid.append(rowAxes)\n    }\n    return (fig, axesGrid)\n}\n```",
+        "testStrategy": "1. Test 1x1 subplot creates single axes\n2. Test 2x2 grid creates 4 non-overlapping axes\n3. Test axes[row][col] indexing works\n4. Test sharex links x-axis limits\n5. Test sharey links y-axis limits\n6. Test figsize scales output\n7. Test spacing parameters affect layout\n8. Visual test: 2x2 grid with different plots",
+        "priority": "high",
+        "dependencies": [
+          "14"
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": "26",
+        "title": "Implement Colorbar for Colormapped Data",
+        "description": "Create colorbar widget showing color-to-value mapping for colormapped visualizations",
+        "details": "Implement colorbar for showing color scale:\n\n1. Create `Colorbar` class:\n   - `palette: ColorPalette`\n   - `vmin: Double`, `vmax: Double`\n   - `label: String?`\n   - `orientation: Orientation` (.vertical, .horizontal)\n   - `tickPositions: [Double]?`\n\n2. Add to Axes/Figure:\n   ```swift\n   // On Axes - attaches colorbar to specific axes\n   public func colorbar(\n       palette: ColorPalette,\n       vmin: Double,\n       vmax: Double,\n       label: String? = nil,\n       orientation: Orientation = .vertical\n   ) -> Colorbar\n   \n   // On Figure - standalone colorbar\n   public func addColorbar(...)\n   ```\n\n3. Colorbar rendering:\n   - Draw gradient rectangle (many thin stripes or gradient fill)\n   - Draw border around gradient\n   - Draw tick marks and labels on appropriate side\n   - Draw label alongside\n\n4. Layout adjustment:\n   - Shrink parent axes to make room for colorbar\n   - Position colorbar adjacent to axes\n\nPseudo-code:\n```swift\npublic class Colorbar {\n    public func render(to context: DrawingContext, in rect: CGRect) {\n        // Draw gradient as series of colored rectangles\n        let steps = 256\n        for i in 0..<steps {\n            let t = Double(i) / Double(steps - 1)\n            let color = palette.color(at: t)\n            // Draw thin rect with this color\n        }\n        // Draw border, ticks, label\n    }\n}\n```",
+        "testStrategy": "1. Test colorbar shows correct palette colors\n2. Test vmin/vmax map to color endpoints\n3. Test vertical orientation draws tall narrow bar\n4. Test horizontal orientation draws short wide bar\n5. Test tick marks appear at nice intervals\n6. Test label renders alongside colorbar\n7. Test parent axes resizes to accommodate colorbar\n8. Visual test: scatter with color mapping and colorbar",
+        "priority": "medium",
+        "dependencies": [
+          "10",
+          "13"
+        ],
+        "status": "pending",
+        "subtasks": []
+      },
+      {
+        "id": "27",
+        "title": "Implement NumericSwift/ArraySwift Conditional Integration",
+        "description": "Add conditional compilation for sister library integration with enhanced functionality when available",
+        "details": "Implement conditional integration with sister libraries:\n\n1. Update Package.swift to support optional dependencies:\n   ```swift\n   // Optional dependencies\n   // .package(url: \"...\", from: \"1.0.0\")\n   ```\n\n2. Create conditional extensions in separate files:\n   - `Sources/PlotSwift/NumericSwiftIntegration.swift`\n   - `Sources/PlotSwift/ArraySwiftIntegration.swift`\n\n3. NumericSwift integration:\n   ```swift\n   #if canImport(NumericSwift)\n   import NumericSwift\n   \n   extension Axes {\n       // Plot from Distribution samples\n       public func plot(_ dist: Distribution, samples: Int = 100)\n       \n       // KDE plot using NumericSwift's kernel functions\n       public func kdeplot(_ data: [Double], bandwidth: Double? = nil)\n   }\n   #endif\n   ```\n\n4. ArraySwift integration:\n   ```swift\n   #if canImport(ArraySwift)\n   import ArraySwift\n   \n   extension Axes {\n       // Accept NDArray for data input\n       public func plot(_ x: NDArray<Double>, _ y: NDArray<Double>, ...)\n       \n       // Heatmap from 2D array\n       public func heatmap(_ data: NDArray<Double>, ...)\n   }\n   #endif\n   ```\n\n5. Provide fallback implementations:\n   - Simple versions when libraries unavailable\n   - Document limitations in API docs\n\nPseudo-code:\n```swift\n#if canImport(NumericSwift)\nimport NumericSwift\n\nextension Axes {\n    @discardableResult\n    public func plot(_ distribution: any Distribution, range: ClosedRange<Double>? = nil, samples: Int = 100, ...) -> DataSeries {\n        let r = range ?? distribution.supportRange\n        let x = stride(from: r.lowerBound, to: r.upperBound, by: (r.upperBound - r.lowerBound) / Double(samples)).map { $0 }\n        let y = x.map { distribution.pdf($0) }\n        return plot(x, y, ...)\n    }\n}\n#endif\n```",
+        "testStrategy": "1. Test standalone compilation without sister libraries\n2. Test with NumericSwift only\n3. Test with ArraySwift only\n4. Test with both libraries\n5. Test NumericSwift extensions available when imported\n6. Test ArraySwift extensions available when imported\n7. Test fallback implementations work\n8. CI: Test all four compilation combinations",
+        "priority": "medium",
+        "dependencies": [
+          "14",
+          "16",
+          "17"
+        ],
+        "status": "pending",
+        "subtasks": []
+      }
+    ],
+    "metadata": {
+      "version": "1.0.0",
+      "lastModified": "2026-01-17T11:36:32.664Z",
+      "taskCount": 27,
+      "completedCount": 2,
+      "tags": [
+        "master"
+      ]
+    }
+  }
+}

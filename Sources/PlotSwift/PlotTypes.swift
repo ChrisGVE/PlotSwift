@@ -25,13 +25,39 @@ import UIKit
 
 // MARK: - Color
 
-/// A color representation for plotting.
+/// A color representation for plotting and drawing operations.
+///
+/// Create colors from RGB values, hex strings, or named colors:
+///
+/// ```swift
+/// // RGB values (0.0 to 1.0)
+/// let red = Color(red: 1, green: 0, blue: 0)
+///
+/// // Hex string
+/// let blue = Color(hex: "#0000FF")!
+///
+/// // Named color
+/// let green = Color(name: "green")!
+///
+/// // Predefined colors
+/// let black = Color.black
+/// ```
 public struct Color: Equatable, Sendable {
+    /// The red component (0.0 to 1.0).
     public let red: Double
+    /// The green component (0.0 to 1.0).
     public let green: Double
+    /// The blue component (0.0 to 1.0).
     public let blue: Double
+    /// The alpha (opacity) component (0.0 to 1.0).
     public let alpha: Double
 
+    /// Creates a color from RGB components.
+    /// - Parameters:
+    ///   - red: Red component (0.0 to 1.0)
+    ///   - green: Green component (0.0 to 1.0)
+    ///   - blue: Blue component (0.0 to 1.0)
+    ///   - alpha: Alpha (opacity) component (0.0 to 1.0), defaults to 1.0
     public init(red: Double, green: Double, blue: Double, alpha: Double = 1.0) {
         self.red = red
         self.green = green
@@ -39,7 +65,12 @@ public struct Color: Equatable, Sendable {
         self.alpha = alpha
     }
 
-    /// Create color from hex string (e.g., "#FF0000" or "FF0000")
+    /// Creates a color from a hex string.
+    ///
+    /// Supports 6-digit (`"#RRGGBB"` or `"RRGGBB"`) and 8-digit (`"#RRGGBBAA"`) formats.
+    ///
+    /// - Parameter hex: The hex color string
+    /// - Returns: A Color if the string is valid, nil otherwise
     public init?(hex: String) {
         var hexSanitized = hex.trimmingCharacters(in: .whitespacesAndNewlines)
         hexSanitized = hexSanitized.replacingOccurrences(of: "#", with: "")
@@ -62,7 +93,14 @@ public struct Color: Equatable, Sendable {
         }
     }
 
-    /// Create color from name
+    /// Creates a color from a named color string.
+    ///
+    /// Supported names: black, white, red, green, blue, yellow, cyan, magenta,
+    /// orange, purple, brown, pink, gray/grey, lightgray/lightgrey, darkgray/darkgrey,
+    /// none/transparent.
+    ///
+    /// - Parameter name: The color name (case-insensitive)
+    /// - Returns: A Color if the name is recognized, nil otherwise
     public init?(name: String) {
         switch name.lowercased() {
         case "black": self = .black
@@ -85,10 +123,14 @@ public struct Color: Equatable, Sendable {
         }
     }
 
+    /// Returns the color as a CoreGraphics CGColor.
     public var cgColor: CGColor {
         CGColor(red: red, green: green, blue: blue, alpha: alpha)
     }
 
+    /// Converts the color to a hex string.
+    /// - Parameter includeAlpha: If true, includes alpha as the last two digits
+    /// - Returns: A hex string in format "#RRGGBB" or "#RRGGBBAA"
     public func toHex(includeAlpha: Bool = false) -> String {
         let r = Int(red * 255)
         let g = Int(green * 255)
@@ -121,26 +163,58 @@ public struct Color: Equatable, Sendable {
 
 // MARK: - TextStyle
 
-/// Text styling for rendering
+/// Configuration for text rendering appearance.
+///
+/// Use TextStyle to customize how text is displayed:
+///
+/// ```swift
+/// let style = TextStyle(
+///     fontSize: 16,
+///     fontWeight: .bold,
+///     color: .black,
+///     anchor: .middle
+/// )
+/// ctx.text("Hello", x: 100, y: 50, style: style)
+/// ```
 public struct TextStyle: Equatable, Sendable {
+    /// The font family name.
     public var fontFamily: String
+    /// The font size in points.
     public var fontSize: Double
+    /// The font weight (normal, bold, or light).
     public var fontWeight: FontWeight
+    /// The text color.
     public var color: Color
+    /// The text anchor point for positioning.
     public var anchor: TextAnchor
 
+    /// Font weight options.
     public enum FontWeight: String, Sendable {
+        /// Normal weight.
         case normal = "normal"
+        /// Bold weight.
         case bold = "bold"
+        /// Light weight.
         case light = "light"
     }
 
+    /// Text anchor position for alignment.
     public enum TextAnchor: String, Sendable {
+        /// Anchor at the start (left for LTR text).
         case start = "start"
+        /// Anchor at the middle (center aligned).
         case middle = "middle"
+        /// Anchor at the end (right for LTR text).
         case end = "end"
     }
 
+    /// Creates a text style with the specified properties.
+    /// - Parameters:
+    ///   - fontFamily: The font family name (default: "sans-serif")
+    ///   - fontSize: The font size in points (default: 12)
+    ///   - fontWeight: The font weight (default: .normal)
+    ///   - color: The text color (default: .black)
+    ///   - anchor: The text anchor for positioning (default: .start)
     public init(
         fontFamily: String = "sans-serif",
         fontSize: Double = 12,
@@ -158,14 +232,29 @@ public struct TextStyle: Equatable, Sendable {
 
 // MARK: - LineStyle
 
-/// Line style for strokes
+/// Dash pattern style for stroked lines.
+///
+/// LineStyle defines the dash pattern used when stroking paths:
+///
+/// ```swift
+/// ctx.setStrokeStyle(.dashed)
+/// ctx.moveTo(0, 50)
+/// ctx.lineTo(200, 50)
+/// ctx.strokePath()
+/// ```
 public enum LineStyle: String, Sendable {
+    /// A continuous solid line.
     case solid = "-"
+    /// A dashed line pattern.
     case dashed = "--"
+    /// A dotted line pattern.
     case dotted = ":"
+    /// An alternating dash-dot pattern.
     case dashDot = "-."
+    /// No line (invisible).
     case none = ""
 
+    /// The CoreGraphics dash pattern array for this style.
     public var dashPattern: [CGFloat]? {
         switch self {
         case .solid, .none: return nil
@@ -178,25 +267,46 @@ public enum LineStyle: String, Sendable {
 
 // MARK: - MarkerStyle
 
-/// Marker style for scatter points
+/// Marker shapes for data point visualization.
+///
+/// MarkerStyle defines shapes that can be used to mark data points
+/// in scatter plots and line plots (rendering support coming in future versions).
+///
+/// The raw values match matplotlib's marker shorthand notation.
 public enum MarkerStyle: String, Sendable {
+    /// A circle marker.
     case circle = "o"
+    /// A square marker.
     case square = "s"
+    /// A diamond marker.
     case diamond = "D"
+    /// An upward-pointing triangle.
     case triangleUp = "^"
+    /// A downward-pointing triangle.
     case triangleDown = "v"
+    /// A left-pointing triangle.
     case triangleLeft = "<"
+    /// A right-pointing triangle.
     case triangleRight = ">"
+    /// A plus sign marker.
     case plus = "+"
+    /// An X-shaped cross marker.
     case cross = "x"
+    /// A star marker.
     case star = "*"
+    /// A small dot marker.
     case dot = "."
+    /// No marker (invisible).
     case none = ""
 }
 
 // MARK: - DrawingCommand
 
-/// Drawing command representing a single vector graphics operation
+/// A single vector graphics operation stored in a ``DrawingContext``.
+///
+/// DrawingCommand represents all the operations that can be recorded
+/// and later rendered. This retained-mode architecture enables scale-free
+/// rendering and export to multiple formats.
 public enum DrawingCommand: Equatable, Sendable {
     // Path construction
     case moveTo(x: Double, y: Double)
@@ -240,20 +350,47 @@ public enum DrawingCommand: Equatable, Sendable {
 
 // MARK: - DrawingContext
 
-/// DrawingContext holds retained vector commands for scale-free rendering
+/// A retained-mode drawing context that stores vector commands for scale-free rendering.
+///
+/// DrawingContext is the primary interface for creating vector graphics in PlotSwift.
+/// All drawing operations are stored as ``DrawingCommand`` instances that can later
+/// be rendered to PNG, PDF, or SVG at any resolution.
+///
+/// ## Basic Usage
+///
+/// ```swift
+/// let ctx = DrawingContext()
+///
+/// // Draw a filled rectangle
+/// ctx.setFillColor(.blue)
+/// ctx.rect(50, 50, 200, 150)
+/// ctx.fillPath()
+///
+/// // Export to PNG
+/// let data = ctx.renderToPNG(size: CGSize(width: 400, height: 300))
+/// ```
+///
+/// ## Coordinate System
+///
+/// The coordinate system uses mathematical conventions: origin at bottom-left,
+/// y-axis pointing upward. This is automatically converted to screen coordinates
+/// during rendering.
 public final class DrawingContext {
-    /// All drawing commands stored in order
+    /// All drawing commands stored in execution order.
     public private(set) var commands: [DrawingCommand] = []
 
-    /// Transform stack for nested coordinate systems
+    /// Transform stack for nested coordinate systems.
     private var transformStack: [CGAffineTransform] = [.identity]
 
-    /// Current transform (top of stack)
+    /// The current transformation matrix (top of the transform stack).
     public var currentTransform: CGAffineTransform {
         transformStack.last ?? .identity
     }
 
-    /// Computed bounds from all drawing commands
+    /// The bounding rectangle of all drawing commands.
+    ///
+    /// Computes the minimal rectangle that contains all drawn content.
+    /// Returns `.zero` if no drawing commands have been added.
     public var bounds: CGRect {
         var minX = Double.infinity
         var minY = Double.infinity

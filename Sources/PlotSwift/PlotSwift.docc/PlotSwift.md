@@ -1,52 +1,100 @@
 # ``PlotSwift``
 
-A Swift vector graphics drawing library providing the foundation for data visualization.
+A Swift library for data visualization with a high-level Figure/Axes API and vector-first rendering.
 
 ## Overview
 
-PlotSwift provides a retained-mode vector graphics system where all drawing operations are stored as commands. This architecture enables scale-free rendering and export to multiple formats (PNG, PDF, SVG) from the same drawing commands.
+PlotSwift provides two complementary layers for producing plots.
 
-### Key Features
+The **high-level layer** mirrors matplotlib's object model: create a ``Figure``,
+add one or more ``Axes`` via ``Figure/addAxes(rect:)`` or
+``Figure/addSubplot(rows:cols:index:)``, call methods such as
+``Axes/plot(_:_:color:lineStyle:lineWidth:marker:markerSize:label:)``,
+``Axes/scatter(_:_:color:marker:markerSize:alpha:label:)``,
+``Axes/bar(_:_:width:bottom:color:edgeColor:edgeWidth:label:)``, or
+``Axes/hist(_:bins:range:density:cumulative:color:edgeColor:alpha:label:)``,
+and export the result with a single call.
 
-- **Retained-mode graphics**: Drawing commands are stored, not immediately rendered
-- **Multiple export formats**: PNG, PDF, and SVG output
-- **CoreGraphics-based**: Native rendering using Apple's graphics stack
-- **Transform support**: Full 2D transformation stack (translate, scale, rotate)
-- **Rich styling**: Colors, line styles, text styles, and transparency
+The **low-level layer** gives direct access to ``DrawingContext`` for building
+arbitrary vector graphics with paths, shapes, text, and transforms.
 
-### Getting Started
-
-Create a ``DrawingContext``, add drawing commands, and export:
+Both layers share the same export pipeline: PNG, PDF, and SVG are all produced
+from the same retained command list, so a drawing is defined once and rendered at
+any size or format.
 
 ```swift
 import PlotSwift
 
-let ctx = DrawingContext()
+let fig = Figure(width: 800, height: 600)
+let ax  = fig.addAxes()
 
-// Draw a filled rectangle
-ctx.setFillColor(.blue)
-ctx.rect(50, 50, 200, 150)
-ctx.fillPath()
+let x = stride(from: 0.0, through: .pi * 2, by: 0.1).map { $0 }
+ax.plot(x, x.map { sin($0) }, label: "sin(x)")
+ax.plot(x, x.map { cos($0) }, label: "cos(x)", lineStyle: .dashed)
+ax.setTitle("Trigonometric Functions")
+ax.setXLabel("x")
+ax.setYLabel("y")
+ax.legend()
+ax.grid(true)
 
-// Export to PNG
-let pngData = ctx.renderToPNG(size: CGSize(width: 400, height: 300))
+let png = fig.renderToPNG()
 ```
+
+### Supported Platforms
+
+PlotSwift requires Swift 5.9+ and supports:
+
+- iOS 15.0 and later
+- macOS 12.0 and later
+- visionOS 1.0 and later
+- watchOS 8.0 and later
+- tvOS 15.0 and later
+
+All rendering uses CoreGraphics and CoreText; no third-party dependencies are
+required at runtime.
 
 ## Topics
 
 ### Essentials
 
-- <doc:Installation>
-- <doc:QuickStart>
-
-### Core Types
-
+- <doc:GettingStarted>
+- ``Figure``
+- ``Axes``
 - ``Color``
+
+### Plot Types
+
+- ``DataSeries``
+- ``BarSeries``
+- ``HistogramBins``
+- ``SeriesType``
+
+### Styling
+
 - ``TextStyle``
 - ``LineStyle``
 - ``MarkerStyle``
+- ``ColorPalette``
 
 ### Drawing
 
+- <doc:PlottingGuide>
 - ``DrawingContext``
 - ``DrawingCommand``
+
+### Geometry
+
+- ``DataRange``
+- ``CoordinateTransform``
+- ``PlotArea``
+
+### Annotations
+
+- <doc:ExportFormats>
+- ``Annotation``
+- ``ArrowProps``
+- ``ArrowStyle``
+- ``ReferenceLine``
+- ``ReferenceSpan``
+- ``FillBetween``
+- ``ErrorBarValue``

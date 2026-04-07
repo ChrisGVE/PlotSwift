@@ -145,6 +145,7 @@ public final class Axes {
   internal var titleStyle: TextStyle?
   internal var xLabelStyle: TextStyle?
   internal var yLabelStyle: TextStyle?
+  internal var colorbar: Colorbar?
 
   // MARK: Init
 

@@ -113,13 +113,15 @@ public struct TickGenerator {
   public func generateTicks(range: DataRange, maxTicks: Int = 10) -> [Double] {
     guard range.span > 0, maxTicks >= 2 else { return [range.min] }
 
-    let rawSpacing = range.span / Double(maxTicks)
-    let spacing = niceNumber(rawSpacing, round: true)
+    // Ceiling (not rounding) of the nice spacing guarantees the count never
+    // exceeds maxTicks even when the range divides evenly by the spacing.
+    let rawSpacing = range.span / Double(maxTicks - 1)
+    let spacing = niceNumber(rawSpacing, round: false)
 
     let firstTick = (range.min / spacing).rounded(.up) * spacing
     var ticks: [Double] = []
     var tick = firstTick
-    while tick <= range.max + spacing * 1e-10, ticks.count < maxTicks {
+    while tick <= range.max + spacing * 1e-10 {
       ticks.append(tick)
       tick += spacing
     }

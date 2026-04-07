@@ -67,8 +67,8 @@ public final class DrawingContext {
   ///
   /// Computes the minimal rectangle that contains all drawn content,
   /// including expansion for the current stroke width at the time each
-  /// geometry command is issued. Thick stroked paths extend half the
-  /// stroke width beyond the mathematical path coordinates.
+  /// geometry command is issued and application of the active
+  /// translation offset from the transform stack (MVP: translation only).
   ///
   /// Returns `.zero` if no drawing commands have been added.
   public var bounds: CGRect {
@@ -77,85 +77,88 @@ public final class DrawingContext {
     var maxX = -Double.infinity
     var maxY = -Double.infinity
 
-    // Track the stroke width in effect when each geometry command executes.
+    // Track the stroke width and translation stack during command replay.
     var currentStrokeWidth: Double = 1.0
+    var txStack: [CGAffineTransform] = [.identity]
+
+    /// Apply the current transform to a data-space point.
+    func transformed(_ x: Double, _ y: Double) -> (Double, Double) {
+      let t = txStack.last ?? .identity
+      let pt = CGPoint(x: x, y: y).applying(t)
+      return (Double(pt.x), Double(pt.y))
+    }
 
     for command in commands {
       switch command {
       case .setStrokeWidth(let width):
         currentStrokeWidth = width
 
+      case .pushTransform(let t):
+        let combined = (txStack.last ?? .identity).concatenating(t)
+        txStack.append(combined)
+
+      case .popTransform:
+        if txStack.count > 1 { txStack.removeLast() }
+
       case .moveTo(let x, let y), .lineTo(let x, let y):
         let hw = currentStrokeWidth / 2
-        minX = Swift.min(minX, x - hw)
-        minY = Swift.min(minY, y - hw)
-        maxX = Swift.max(maxX, x + hw)
-        maxY = Swift.max(maxY, y + hw)
+        let (tx, ty) = transformed(x, y)
+        minX = Swift.min(minX, tx - hw); maxX = Swift.max(maxX, tx + hw)
+        minY = Swift.min(minY, ty - hw); maxY = Swift.max(maxY, ty + hw)
 
       case .curveTo(let cp1x, let cp1y, let cp2x, let cp2y, let x, let y):
         let hw = currentStrokeWidth / 2
-        for px in [cp1x, cp2x, x] {
-          minX = Swift.min(minX, px - hw)
-          maxX = Swift.max(maxX, px + hw)
-        }
-        for py in [cp1y, cp2y, y] {
-          minY = Swift.min(minY, py - hw)
-          maxY = Swift.max(maxY, py + hw)
+        for (px, py) in [(cp1x, cp1y), (cp2x, cp2y), (x, y)] {
+          let (tx, ty) = transformed(px, py)
+          minX = Swift.min(minX, tx - hw); maxX = Swift.max(maxX, tx + hw)
+          minY = Swift.min(minY, ty - hw); maxY = Swift.max(maxY, ty + hw)
         }
 
       case .quadCurveTo(let cpx, let cpy, let x, let y):
         let hw = currentStrokeWidth / 2
-        for px in [cpx, x] {
-          minX = Swift.min(minX, px - hw)
-          maxX = Swift.max(maxX, px + hw)
-        }
-        for py in [cpy, y] {
-          minY = Swift.min(minY, py - hw)
-          maxY = Swift.max(maxY, py + hw)
+        for (px, py) in [(cpx, cpy), (x, y)] {
+          let (tx, ty) = transformed(px, py)
+          minX = Swift.min(minX, tx - hw); maxX = Swift.max(maxX, tx + hw)
+          minY = Swift.min(minY, ty - hw); maxY = Swift.max(maxY, ty + hw)
         }
 
       case .rect(let x, let y, let w, let h):
         let hw = currentStrokeWidth / 2
-        minX = Swift.min(minX, x - hw)
-        minY = Swift.min(minY, y - hw)
-        maxX = Swift.max(maxX, x + w + hw)
-        maxY = Swift.max(maxY, y + h + hw)
+        for (px, py) in [(x, y), (x + w, y + h)] {
+          let (tx, ty) = transformed(px, py)
+          minX = Swift.min(minX, tx - hw); maxX = Swift.max(maxX, tx + hw)
+          minY = Swift.min(minY, ty - hw); maxY = Swift.max(maxY, ty + hw)
+        }
 
       case .ellipse(let cx, let cy, let rx, let ry):
         let hw = currentStrokeWidth / 2
-        minX = Swift.min(minX, cx - rx - hw)
-        minY = Swift.min(minY, cy - ry - hw)
-        maxX = Swift.max(maxX, cx + rx + hw)
-        maxY = Swift.max(maxY, cy + ry + hw)
+        let (tcx, tcy) = transformed(cx, cy)
+        minX = Swift.min(minX, tcx - rx - hw); maxX = Swift.max(maxX, tcx + rx + hw)
+        minY = Swift.min(minY, tcy - ry - hw); maxY = Swift.max(maxY, tcy + ry + hw)
 
       case .arc(let cx, let cy, let r, _, _, _):
         let hw = currentStrokeWidth / 2
-        minX = Swift.min(minX, cx - r - hw)
-        minY = Swift.min(minY, cy - r - hw)
-        maxX = Swift.max(maxX, cx + r + hw)
-        maxY = Swift.max(maxY, cy + r + hw)
+        let (tcx, tcy) = transformed(cx, cy)
+        minX = Swift.min(minX, tcx - r - hw); maxX = Swift.max(maxX, tcx + r + hw)
+        minY = Swift.min(minY, tcy - r - hw); maxY = Swift.max(maxY, tcy + r + hw)
 
       case .text(_, let x, let y, _):
-        minX = Swift.min(minX, x)
-        minY = Swift.min(minY, y)
-        maxX = Swift.max(maxX, x)
-        maxY = Swift.max(maxY, y)
+        let (tx, ty) = transformed(x, y)
+        minX = Swift.min(minX, tx); maxX = Swift.max(maxX, tx)
+        minY = Swift.min(minY, ty); maxY = Swift.max(maxY, ty)
 
       case .marker(_, let x, let y, let size):
+        let (tx, ty) = transformed(x, y)
         let half = size / 2
-        minX = Swift.min(minX, x - half)
-        minY = Swift.min(minY, y - half)
-        maxX = Swift.max(maxX, x + half)
-        maxY = Swift.max(maxY, y + half)
+        minX = Swift.min(minX, tx - half); maxX = Swift.max(maxX, tx + half)
+        minY = Swift.min(minY, ty - half); maxY = Swift.max(maxY, ty + half)
 
       default:
         break
       }
     }
 
-    if minX == Double.infinity {
-      return .zero
-    }
+    if minX == Double.infinity { return .zero }
     return CGRect(x: minX, y: minY, width: maxX - minX, height: maxY - minY)
   }
 

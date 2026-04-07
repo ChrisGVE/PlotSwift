@@ -547,6 +547,38 @@ final class PlotTypesTests: XCTestCase {
         XCTAssertEqual(bounds.maxY, 72, accuracy: 1e-10)
     }
 
+    func testDrawingContextBoundsAccountsForTranslation() {
+        let ctx = DrawingContext()
+        ctx.translate(50, 30)
+        ctx.moveTo(0, 0)
+        ctx.lineTo(100, 100)
+        ctx.popTransform()
+        let bounds = ctx.bounds
+        // Coordinates are shifted by (50, 30). Default stroke width 1.0 → hw = 0.5.
+        XCTAssertEqual(bounds.minX, 49.5, accuracy: 1e-10)
+        XCTAssertEqual(bounds.minY, 29.5, accuracy: 1e-10)
+        XCTAssertEqual(bounds.maxX, 150.5, accuracy: 1e-10)
+        XCTAssertEqual(bounds.maxY, 130.5, accuracy: 1e-10)
+    }
+
+    func testDrawingContextBoundsTranslationRevertedAfterPop() {
+        let ctx = DrawingContext()
+        // Draw at origin first (no transform).
+        ctx.moveTo(0, 0)
+        ctx.lineTo(10, 10)
+        // Push translation and draw again.
+        ctx.translate(100, 200)
+        ctx.moveTo(0, 0)
+        ctx.lineTo(10, 10)
+        ctx.popTransform()
+        let bounds = ctx.bounds
+        // The untranslated segment spans [0-0.5, 10+0.5]; translated segment spans [100-0.5, 110+0.5].
+        XCTAssertEqual(bounds.minX, -0.5, accuracy: 1e-10)
+        XCTAssertEqual(bounds.minY, -0.5, accuracy: 1e-10)
+        XCTAssertEqual(bounds.maxX, 110.5, accuracy: 1e-10)
+        XCTAssertEqual(bounds.maxY, 210.5, accuracy: 1e-10)
+    }
+
     func testDrawingContextClip() {
         let ctx = DrawingContext()
         ctx.clipRect(0, 0, 100, 100)

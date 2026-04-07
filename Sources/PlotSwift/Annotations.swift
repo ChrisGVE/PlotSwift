@@ -188,6 +188,40 @@ public struct FillBetween: Sendable {
   }
 }
 
+// MARK: - PolygonSeries
+
+/// A filled and/or stroked polygon defined by explicit (x, y) vertex coordinates.
+public struct PolygonSeries: Sendable {
+  /// X-coordinates of the polygon vertices (in data space).
+  public let xs: [Double]
+  /// Y-coordinates of the polygon vertices (in data space).
+  public let ys: [Double]
+  /// Fill color.
+  public let fillColor: Color
+  /// Fill opacity.
+  public let alpha: Double
+  /// Optional edge stroke color (`nil` means no stroke).
+  public let edgeColor: Color?
+  /// Edge stroke width in points.
+  public let edgeWidth: Double
+
+  public init(
+    xs: [Double],
+    ys: [Double],
+    fillColor: Color = .blue,
+    alpha: Double = 0.5,
+    edgeColor: Color? = nil,
+    edgeWidth: Double = 1.0
+  ) {
+    self.xs = xs
+    self.ys = ys
+    self.fillColor = fillColor
+    self.alpha = alpha
+    self.edgeColor = edgeColor
+    self.edgeWidth = edgeWidth
+  }
+}
+
 // MARK: - ErrorBarValue
 
 /// Error bar specification for data points.

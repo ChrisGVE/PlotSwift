@@ -241,22 +241,21 @@ extension Axes {
   ) {
     let h = silvermanBandwidth(group)
     guard h > 0 else { return }
-    let (_, ys) = gaussianKDE(data: group, bandwidth: h, steps: 100)
-    let evalXs = linspace(
-      from: group.min()! - 3 * h, to: group.max()! + 3 * h, count: 100)
-    guard let maxDensity = ys.max(), maxDensity > 0 else { return }
+    let (evalYs, densities) = gaussianKDE(data: group, bandwidth: h, steps: 100)
+    guard let maxDensity = densities.max(), maxDensity > 0 else { return }
     let scale = halfWidth / maxDensity
 
-    // Build left and right profiles
-    let leftXs = ys.map { x - $0 * scale }
-    let rightXs = ys.map { x + $0 * scale }
+    // Right side (bottom to top), then left side (top to bottom) — closed polygon.
+    // polyX: x-coords (data horizontal axis), polyY: data values (vertical axis).
+    let rightXs = densities.map { x + $0 * scale }
+    let leftXs  = densities.reversed().map { x - $0 * scale }
+    let polyX = rightXs + leftXs
+    let polyY = evalYs + evalYs.reversed()
 
-    // Top half: left to right; bottom half: right to left (closed polygon)
-    let polyX = leftXs + rightXs.reversed()
-    let polyY = evalXs + evalXs.reversed()
-    fillBetweens.append(FillBetween(
-      x: polyX, y1: polyY, y2: Array(repeating: polyY[0], count: polyX.count),
-      color: color, alpha: 0.6, edgeColor: color, edgeWidth: 1.0))
+    polygonSeries.append(PolygonSeries(
+      xs: polyX, ys: polyY,
+      fillColor: color, alpha: 0.6,
+      edgeColor: color, edgeWidth: 1.0))
 
     if showMedian {
       let sorted = group.sorted()

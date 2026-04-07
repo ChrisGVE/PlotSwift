@@ -61,6 +61,37 @@ extension Axes {
     }
   }
 
+  // MARK: Polygon rendering
+
+  func renderPolygons(_ context: DrawingContext, transform: LinearTransform) {
+    for poly in polygonSeries {
+      guard poly.xs.count >= 3, poly.xs.count == poly.ys.count else { continue }
+      context.saveState()
+      context.setFillColor(poly.fillColor.withAlpha(poly.alpha))
+      let (sx, sy) = transform.dataToPixel(x: poly.xs[0], y: poly.ys[0])
+      context.moveTo(sx, sy)
+      for i in 1..<poly.xs.count {
+        let (px, py) = transform.dataToPixel(x: poly.xs[i], y: poly.ys[i])
+        context.lineTo(px, py)
+      }
+      context.closePath()
+      context.fillPath()
+      if let edge = poly.edgeColor, poly.edgeWidth > 0 {
+        context.setStrokeColor(edge)
+        context.setStrokeWidth(poly.edgeWidth)
+        let (sx2, sy2) = transform.dataToPixel(x: poly.xs[0], y: poly.ys[0])
+        context.moveTo(sx2, sy2)
+        for i in 1..<poly.xs.count {
+          let (px, py) = transform.dataToPixel(x: poly.xs[i], y: poly.ys[i])
+          context.lineTo(px, py)
+        }
+        context.closePath()
+        context.strokePath()
+      }
+      context.restoreState()
+    }
+  }
+
   // MARK: Reference lines
 
   func renderRefLines(

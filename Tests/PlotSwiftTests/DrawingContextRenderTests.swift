@@ -60,6 +60,7 @@ final class DrawingContextRenderTests: XCTestCase {
     let ctx = DrawingContext()
     ctx.drawMarker(style: .circle, x: 100, y: 100, size: 20)
     let bounds = ctx.bounds
+    // Marker bounds use size/2 only; no stroke expansion applied to markers.
     XCTAssertEqual(bounds.minX, 90)
     XCTAssertEqual(bounds.minY, 90)
     XCTAssertEqual(bounds.maxX, 110)
@@ -218,10 +219,11 @@ final class DrawingContextRenderTests: XCTestCase {
     ctx.moveTo(0, 0)
     ctx.curveTo(cp1x: 25, cp1y: 100, cp2x: 75, cp2y: -50, x: 100, y: 0)
     let bounds = ctx.bounds
-    XCTAssertEqual(bounds.minX, 0)
-    XCTAssertEqual(bounds.minY, -50)
-    XCTAssertEqual(bounds.maxX, 100)
-    XCTAssertEqual(bounds.maxY, 100)
+    // Default stroke width 1.0 → expand by 0.5.
+    XCTAssertEqual(bounds.minX, -0.5, accuracy: 1e-10)
+    XCTAssertEqual(bounds.minY, -50.5, accuracy: 1e-10)
+    XCTAssertEqual(bounds.maxX, 100.5, accuracy: 1e-10)
+    XCTAssertEqual(bounds.maxY, 100.5, accuracy: 1e-10)
   }
 
   func testBoundsIncludesQuadCurves() {
@@ -229,18 +231,20 @@ final class DrawingContextRenderTests: XCTestCase {
     ctx.moveTo(0, 0)
     ctx.quadCurveTo(cpx: 50, cpy: 100, x: 100, y: 0)
     let bounds = ctx.bounds
-    XCTAssertEqual(bounds.minY, 0)
-    XCTAssertEqual(bounds.maxY, 100)
+    // Default stroke width 1.0 → expand by 0.5.
+    XCTAssertEqual(bounds.minY, -0.5, accuracy: 1e-10)
+    XCTAssertEqual(bounds.maxY, 100.5, accuracy: 1e-10)
   }
 
   func testBoundsIncludesArcs() {
     let ctx = DrawingContext()
     ctx.arc(cx: 100, cy: 100, r: 50, startAngle: 0, endAngle: .pi)
     let bounds = ctx.bounds
-    XCTAssertEqual(bounds.minX, 50)
-    XCTAssertEqual(bounds.minY, 50)
-    XCTAssertEqual(bounds.maxX, 150)
-    XCTAssertEqual(bounds.maxY, 150)
+    // Default stroke width 1.0 → expand by 0.5.
+    XCTAssertEqual(bounds.minX, 49.5, accuracy: 1e-10)
+    XCTAssertEqual(bounds.minY, 49.5, accuracy: 1e-10)
+    XCTAssertEqual(bounds.maxX, 150.5, accuracy: 1e-10)
+    XCTAssertEqual(bounds.maxY, 150.5, accuracy: 1e-10)
   }
 
   // MARK: - PNG/PDF Marker Rendering

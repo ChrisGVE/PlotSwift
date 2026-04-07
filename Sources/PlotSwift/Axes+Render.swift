@@ -33,6 +33,7 @@ extension Axes {
     renderBackground(context, rect: rect)
     renderSpans(context, transform: transform, limits: limits)
     if showGrid { renderGrid(context, transform: transform, xTicks: xTicks, yTicks: yTicks) }
+    renderHeatmaps(context, transform: transform)
     renderFillBetweens(context, transform: transform)
     renderBarSeriesList(context, transform: transform)
     renderAxesFrame(context, rect: rect)
@@ -299,6 +300,38 @@ extension Axes {
       return (Double(rect.maxX) - boxWidth - pad, Double(rect.maxY) - boxHeight - pad)
     case .bottomLeft:
       return (Double(rect.minX) + pad, Double(rect.maxY) - boxHeight - pad)
+    }
+  }
+
+  // MARK: Heatmap rendering
+
+  func renderHeatmaps(_ context: DrawingContext, transform: LinearTransform) {
+    for hm in heatmapData {
+      let rows = hm.values.count
+      guard rows > 0 else { continue }
+      let cols = hm.values[0].count
+      let span = hm.vmax - hm.vmin
+      let annotStyle = TextStyle(fontSize: 8, anchor: .middle)
+      for row in 0..<rows {
+        for col in 0..<cols {
+          let v = hm.values[row][col]
+          let t = span > 0 ? (v - hm.vmin) / span : 0.5
+          let cellColor = hm.palette.color(at: t)
+          let (px1, py1) = transform.dataToPixel(x: Double(col), y: Double(rows - row - 1))
+          let (px2, py2) = transform.dataToPixel(x: Double(col + 1), y: Double(rows - row))
+          context.saveState()
+          context.setFillColor(cellColor)
+          context.rect(min(px1, px2), min(py1, py2), abs(px2 - px1), abs(py2 - py1))
+          context.fillPath()
+          if hm.annotate {
+            let label = String(format: hm.fmt, v)
+            let cx = (px1 + px2) / 2
+            let cy = (py1 + py2) / 2
+            context.text(label, x: cx, y: cy, style: annotStyle)
+          }
+          context.restoreState()
+        }
+      }
     }
   }
 

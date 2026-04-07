@@ -481,30 +481,70 @@ final class PlotTypesTests: XCTestCase {
         ctx.moveTo(10, 20)
         ctx.lineTo(100, 150)
         let bounds = ctx.bounds
-        XCTAssertEqual(bounds.minX, 10)
-        XCTAssertEqual(bounds.minY, 20)
-        XCTAssertEqual(bounds.maxX, 100)
-        XCTAssertEqual(bounds.maxY, 150)
+        // Default stroke width is 1.0 → expand by 0.5 on each side.
+        XCTAssertEqual(bounds.minX, 9.5, accuracy: 1e-10)
+        XCTAssertEqual(bounds.minY, 19.5, accuracy: 1e-10)
+        XCTAssertEqual(bounds.maxX, 100.5, accuracy: 1e-10)
+        XCTAssertEqual(bounds.maxY, 150.5, accuracy: 1e-10)
     }
 
     func testDrawingContextBoundsWithRect() {
         let ctx = DrawingContext()
         ctx.rect(10, 20, 100, 50)
         let bounds = ctx.bounds
-        XCTAssertEqual(bounds.minX, 10)
-        XCTAssertEqual(bounds.minY, 20)
-        XCTAssertEqual(bounds.width, 100)
-        XCTAssertEqual(bounds.height, 50)
+        // Default stroke width is 1.0 → expand by 0.5 on each side.
+        XCTAssertEqual(bounds.minX, 9.5, accuracy: 1e-10)
+        XCTAssertEqual(bounds.minY, 19.5, accuracy: 1e-10)
+        XCTAssertEqual(bounds.width, 101, accuracy: 1e-10)
+        XCTAssertEqual(bounds.height, 51, accuracy: 1e-10)
     }
 
     func testDrawingContextBoundsWithEllipse() {
         let ctx = DrawingContext()
         ctx.ellipse(cx: 50, cy: 50, rx: 25, ry: 15)
         let bounds = ctx.bounds
-        XCTAssertEqual(bounds.minX, 25)  // cx - rx
-        XCTAssertEqual(bounds.minY, 35)  // cy - ry
-        XCTAssertEqual(bounds.maxX, 75)  // cx + rx
-        XCTAssertEqual(bounds.maxY, 65)  // cy + ry
+        // Default stroke width is 1.0, so bounds expand by 0.5 on each side.
+        XCTAssertEqual(bounds.minX, 24.5)  // cx - rx - hw
+        XCTAssertEqual(bounds.minY, 34.5)  // cy - ry - hw
+        XCTAssertEqual(bounds.maxX, 75.5)  // cx + rx + hw
+        XCTAssertEqual(bounds.maxY, 65.5)  // cy + ry + hw
+    }
+
+    func testDrawingContextBoundsExpandsByStrokeWidth() {
+        let ctx = DrawingContext()
+        ctx.setStrokeWidth(10.0)
+        ctx.moveTo(100, 100)
+        ctx.lineTo(200, 200)
+        let bounds = ctx.bounds
+        // Stroke width 10 → expand by 5 on each side.
+        XCTAssertEqual(bounds.minX, 95, accuracy: 1e-10)
+        XCTAssertEqual(bounds.minY, 95, accuracy: 1e-10)
+        XCTAssertEqual(bounds.maxX, 205, accuracy: 1e-10)
+        XCTAssertEqual(bounds.maxY, 205, accuracy: 1e-10)
+    }
+
+    func testDrawingContextBoundsDefaultStrokeWidthOne() {
+        // Without an explicit setStrokeWidth the default is 1.0.
+        let ctx = DrawingContext()
+        ctx.moveTo(10, 10)
+        ctx.lineTo(90, 90)
+        let bounds = ctx.bounds
+        XCTAssertEqual(bounds.minX, 9.5, accuracy: 1e-10)
+        XCTAssertEqual(bounds.minY, 9.5, accuracy: 1e-10)
+        XCTAssertEqual(bounds.maxX, 90.5, accuracy: 1e-10)
+        XCTAssertEqual(bounds.maxY, 90.5, accuracy: 1e-10)
+    }
+
+    func testDrawingContextBoundsRectExpandsByStrokeWidth() {
+        let ctx = DrawingContext()
+        ctx.setStrokeWidth(4.0)
+        ctx.rect(10, 20, 100, 50)
+        let bounds = ctx.bounds
+        // hw = 2
+        XCTAssertEqual(bounds.minX, 8, accuracy: 1e-10)
+        XCTAssertEqual(bounds.minY, 18, accuracy: 1e-10)
+        XCTAssertEqual(bounds.maxX, 112, accuracy: 1e-10)
+        XCTAssertEqual(bounds.maxY, 72, accuracy: 1e-10)
     }
 
     func testDrawingContextClip() {

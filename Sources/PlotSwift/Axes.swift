@@ -140,12 +140,15 @@ public final class Axes {
   internal var fillBetweens: [FillBetween] = []
   internal var barSeriesList: [BarSeries] = []
   internal var errorBarData: [ErrorBarData] = []
+  internal var heatmapData: [HeatmapData] = []
   internal var showLegend: Bool = false
   internal var legendPosition: LegendPosition = .topRight
   internal var titleStyle: TextStyle?
   internal var xLabelStyle: TextStyle?
   internal var yLabelStyle: TextStyle?
   internal var colorbar: Colorbar?
+  /// A secondary axes sharing the same x-axis (created by ``twinx()``).
+  internal var twinAxes: Axes?
 
   // MARK: Init
 

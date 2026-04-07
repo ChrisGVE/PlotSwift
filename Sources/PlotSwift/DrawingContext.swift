@@ -65,7 +65,11 @@ public final class DrawingContext {
 
   /// The bounding rectangle of all drawing commands.
   ///
-  /// Computes the minimal rectangle that contains all drawn content.
+  /// Computes the minimal rectangle that contains all drawn content,
+  /// including expansion for the current stroke width at the time each
+  /// geometry command is issued. Thick stroked paths extend half the
+  /// stroke width beyond the mathematical path coordinates.
+  ///
   /// Returns `.zero` if no drawing commands have been added.
   public var bounds: CGRect {
     var minX = Double.infinity
@@ -73,57 +77,77 @@ public final class DrawingContext {
     var maxX = -Double.infinity
     var maxY = -Double.infinity
 
+    // Track the stroke width in effect when each geometry command executes.
+    var currentStrokeWidth: Double = 1.0
+
     for command in commands {
       switch command {
+      case .setStrokeWidth(let width):
+        currentStrokeWidth = width
+
       case .moveTo(let x, let y), .lineTo(let x, let y):
-        minX = Swift.min(minX, x)
-        minY = Swift.min(minY, y)
-        maxX = Swift.max(maxX, x)
-        maxY = Swift.max(maxY, y)
+        let hw = currentStrokeWidth / 2
+        minX = Swift.min(minX, x - hw)
+        minY = Swift.min(minY, y - hw)
+        maxX = Swift.max(maxX, x + hw)
+        maxY = Swift.max(maxY, y + hw)
+
       case .curveTo(let cp1x, let cp1y, let cp2x, let cp2y, let x, let y):
+        let hw = currentStrokeWidth / 2
         for px in [cp1x, cp2x, x] {
-          minX = Swift.min(minX, px)
-          maxX = Swift.max(maxX, px)
+          minX = Swift.min(minX, px - hw)
+          maxX = Swift.max(maxX, px + hw)
         }
         for py in [cp1y, cp2y, y] {
-          minY = Swift.min(minY, py)
-          maxY = Swift.max(maxY, py)
+          minY = Swift.min(minY, py - hw)
+          maxY = Swift.max(maxY, py + hw)
         }
+
       case .quadCurveTo(let cpx, let cpy, let x, let y):
+        let hw = currentStrokeWidth / 2
         for px in [cpx, x] {
-          minX = Swift.min(minX, px)
-          maxX = Swift.max(maxX, px)
+          minX = Swift.min(minX, px - hw)
+          maxX = Swift.max(maxX, px + hw)
         }
         for py in [cpy, y] {
-          minY = Swift.min(minY, py)
-          maxY = Swift.max(maxY, py)
+          minY = Swift.min(minY, py - hw)
+          maxY = Swift.max(maxY, py + hw)
         }
+
       case .rect(let x, let y, let w, let h):
-        minX = Swift.min(minX, x)
-        minY = Swift.min(minY, y)
-        maxX = Swift.max(maxX, x + w)
-        maxY = Swift.max(maxY, y + h)
+        let hw = currentStrokeWidth / 2
+        minX = Swift.min(minX, x - hw)
+        minY = Swift.min(minY, y - hw)
+        maxX = Swift.max(maxX, x + w + hw)
+        maxY = Swift.max(maxY, y + h + hw)
+
       case .ellipse(let cx, let cy, let rx, let ry):
-        minX = Swift.min(minX, cx - rx)
-        minY = Swift.min(minY, cy - ry)
-        maxX = Swift.max(maxX, cx + rx)
-        maxY = Swift.max(maxY, cy + ry)
+        let hw = currentStrokeWidth / 2
+        minX = Swift.min(minX, cx - rx - hw)
+        minY = Swift.min(minY, cy - ry - hw)
+        maxX = Swift.max(maxX, cx + rx + hw)
+        maxY = Swift.max(maxY, cy + ry + hw)
+
       case .arc(let cx, let cy, let r, _, _, _):
-        minX = Swift.min(minX, cx - r)
-        minY = Swift.min(minY, cy - r)
-        maxX = Swift.max(maxX, cx + r)
-        maxY = Swift.max(maxY, cy + r)
+        let hw = currentStrokeWidth / 2
+        minX = Swift.min(minX, cx - r - hw)
+        minY = Swift.min(minY, cy - r - hw)
+        maxX = Swift.max(maxX, cx + r + hw)
+        maxY = Swift.max(maxY, cy + r + hw)
+
       case .text(_, let x, let y, _):
         minX = Swift.min(minX, x)
         minY = Swift.min(minY, y)
         maxX = Swift.max(maxX, x)
         maxY = Swift.max(maxY, y)
+
       case .marker(_, let x, let y, let size):
         let half = size / 2
         minX = Swift.min(minX, x - half)
         minY = Swift.min(minY, y - half)
         maxX = Swift.max(maxX, x + half)
         maxY = Swift.max(maxY, y + half)
+
       default:
         break
       }

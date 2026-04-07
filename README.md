@@ -245,21 +245,19 @@ MarkerStyle.plus, .cross, .star, .dot
 - `renderToPDF(size:)` - Export to PDF data
 - `renderToSVG(size:)` - Export to SVG string
 
-## Roadmap
+## Current Limitations
 
-PlotSwift 0.1.0 provides the vector graphics foundation. Future versions will add:
-
-- **0.2.x**: High-level plotting API (`plot()`, `scatter()`, Figure/Axes)
-- **0.3.x**: Additional plot types (bar, histogram, box plot)
-- **0.4.x**: Statistical visualizations, colormaps
-- **0.5.x+**: Animation support (inspired by manim)
-
-PlotSwift is designed to integrate with [NumericSwift](https://github.com/ChrisGVE/NumericSwift) and [ArraySwift](https://github.com/ChrisGVE/ArraySwift) for scientific computing workflows.
+- **SVG export**: Transform nesting is approximate; deeply nested transforms may accumulate rounding. Clip regions use random IDs that may collide in very large documents.
+- **Text measurement**: Text bounding boxes are estimated from optical bounds, which can be inaccurate for some fonts and scripts. Y-label rotation is simulated via positioning rather than actual SVG/CG rotation.
+- **Logarithmic scale**: `LogTransform` clamps non-positive values silently. Tick generation for log scales uses the linear nice-number algorithm rather than decade-based ticks.
+- **Animation**: Frame-by-frame only; no native video encoding. Use the PNG frame sequence with an external tool (e.g., FFmpeg) for video output.
+- **Conditional integration**: NumericSwift and ArraySwift extensions are compiled only when those packages are present; they are not testable in standalone builds.
+- **Bounds calculation**: Stroke width expansion and transform-aware bounds are best-effort approximations; complex transform chains may undercount.
 
 ## Requirements
 
 - Swift 5.9+
-- iOS 15.0+ / macOS 12.0+
+- iOS 15.0+ / macOS 12.0+ / watchOS 8.0+ / tvOS 15.0+ / visionOS 1.0+
 - Frameworks: CoreGraphics, CoreText, ImageIO
 
 ## License
